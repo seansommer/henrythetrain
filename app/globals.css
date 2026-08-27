@@ -286,11 +286,11 @@ input {
 }
 
 .bird-flock.flock-0 {
-  background-position: 66.666% 50%;
+  background-position: 0 100%;
 }
 
 .bird-flock.flock-1 {
-  background-position: 100% 50%;
+  background-position: 33.333% 100%;
 }
 
 .animal-friend {
@@ -317,12 +317,12 @@ input {
 
 .animal-2 {
   right: 15%;
-  background-position: 0 100%;
+  background-position: 66.666% 50%;
 }
 
 .animal-3 {
   right: 1%;
-  background-position: 33.333% 100%;
+  background-position: 100% 50%;
 }
 
 .status-pill {
