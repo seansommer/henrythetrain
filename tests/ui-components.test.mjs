@@ -63,4 +63,6 @@ test("animals are anchored to the foreground edge", () => {
   assert.match(css, /\.animal-friend[\s\S]*?bottom:\s*-10%/);
   assert.match(css, /\.animal-0[\s\S]*?left:\s*1%/);
   assert.match(css, /\.animal-3[\s\S]*?right:\s*1%/);
+  assert.match(css, /\.animal-2[\s\S]*?background-position:\s*66\.666% 50%/);
+  assert.match(css, /\.bird-flock\.flock-0[\s\S]*?background-position:\s*0 100%/);
 });
