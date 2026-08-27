@@ -1,0 +1,15 @@
+{
+  "atlas": "/assets/railroad-friends-v2.webp",
+  "width": 1448,
+  "height": 1086,
+  "sprites": {
+    "deer": [8, 410, 345, 366],
+    "rabbit": [404, 409, 314, 369],
+    "raccoon": [726, 447, 339, 333],
+    "bear": [1108, 428, 338, 353],
+    "blue-birds": [12, 781, 337, 290],
+    "brown-birds": [365, 780, 335, 294],
+    "cloud-one": [724, 797, 360, 275],
+    "cloud-two": [1088, 795, 357, 271]
+  }
+}

@@ -151,13 +151,18 @@ input {
   transform: translateY(2px) scale(0.97);
 }
 
-.cloud,
-.bird-flock,
-.animal-friend,
 .crossing-signal,
 .crossing-gate {
   background-image: url("/assets/railroad-friends-v2.webp");
   background-repeat: no-repeat;
+}
+
+.scene-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .cloud {
@@ -165,7 +170,6 @@ input {
   z-index: -3;
   width: clamp(90px, 11vw, 190px);
   aspect-ratio: 1 / 0.72;
-  background-size: 400% 300%;
   opacity: 0.42;
   filter: blur(0.35px) drop-shadow(0 4px 4px rgba(58, 120, 150, 0.08));
   pointer-events: none;
@@ -173,13 +177,11 @@ input {
 
 .cloud-one {
   top: 4%;
-  background-position: 66.666% 100%;
   animation: cloud-drift-one 42s linear infinite;
 }
 
 .cloud-two {
   top: 12%;
-  background-position: 100% 100%;
   animation: cloud-drift-two 58s linear infinite;
 }
 
@@ -280,17 +282,8 @@ input {
   left: -24vw;
   width: clamp(100px, 12vw, 190px);
   aspect-ratio: 1.35 / 1;
-  background-size: 400% 300%;
   pointer-events: none;
   animation: birds-cross 8.5s ease-in-out 1 both;
-}
-
-.bird-flock.flock-0 {
-  background-position: 0 100%;
-}
-
-.bird-flock.flock-1 {
-  background-position: 33.333% 100%;
 }
 
 .animal-friend {
@@ -299,7 +292,6 @@ input {
   bottom: -10%;
   width: clamp(125px, 14vw, 220px);
   aspect-ratio: 1 / 1.1;
-  background-size: 400% 300%;
   filter: drop-shadow(0 8px 6px rgba(21, 58, 42, 0.25));
   pointer-events: none;
   animation: animal-hello 3.9s ease-in-out 1 both;
@@ -307,22 +299,18 @@ input {
 
 .animal-0 {
   left: 1%;
-  background-position: 0 50%;
 }
 
 .animal-1 {
   left: 15%;
-  background-position: 33.333% 50%;
 }
 
 .animal-2 {
   right: 15%;
-  background-position: 66.666% 50%;
 }
 
 .animal-3 {
   right: 1%;
-  background-position: 100% 50%;
 }
 
 .status-pill {

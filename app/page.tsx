@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { SceneSprite, type SceneSpriteName } from "@/components/scene-sprite";
 import {
   Bird,
   CircleStop,
@@ -16,6 +17,8 @@ import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const TRAIN_COUNT = 10;
+const ANIMAL_SPRITES: SceneSpriteName[] = ["deer", "rabbit", "raccoon", "bear"];
+const BIRD_SPRITES: SceneSpriteName[] = ["blue-birds", "brown-birds"];
 const TRAIN_RUN_MS = 9_000;
 const LIGHT_RUN_MS = 10_000;
 const GATE_RUN_MS = 10_000;
@@ -404,8 +407,12 @@ export default function Home() {
     <main className="railroad-app">
       <section className="railroad-stage" aria-label="Henry's animated railroad crossing">
         <div className="world-pan" aria-hidden="true" />
-        <div className="cloud cloud-one" aria-hidden="true" />
-        <div className="cloud cloud-two" aria-hidden="true" />
+        <div className="cloud cloud-one" aria-hidden="true">
+          <SceneSprite name="cloud-one" />
+        </div>
+        <div className="cloud cloud-two" aria-hidden="true">
+          <SceneSprite name="cloud-two" />
+        </div>
 
         <header className="game-header">
           <div className={`title-sign ${titleVisible ? "" : "is-hidden"}`}>
@@ -446,12 +453,14 @@ export default function Home() {
 
         {birds !== null && (
           <div className={`bird-flock flock-${birds}`} aria-label="Birds are flying overhead">
+            <SceneSprite name={BIRD_SPRITES[birds]} />
             <span className="sr-only">Birds fly overhead</span>
           </div>
         )}
 
         {animal !== null && (
           <div className={`animal-friend animal-${animal}`} aria-live="polite">
+            <SceneSprite name={ANIMAL_SPRITES[animal]} />
             <span className="sr-only">A friendly animal pops up and waves hello</span>
           </div>
         )}
