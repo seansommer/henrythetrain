@@ -30,32 +30,25 @@ test("late audio start catches up and never begins a stale passing sequence", ()
   assert.equal(events.length, count);
 });
 
-test("Henry greeting uses SFX volume, a local voice, and obeys master mute", () => {
-  const spoken = [];
-  let cancelled = 0;
-  const voice = { lang: "en-US", localService: true };
+test("train actions and volume controls never request browser speech", () => {
+  const forbidden = () => { throw new Error("Browser speech must never be used"); };
   const { RailroadAudio } = loadTs("../lib/railroad-audio.ts", {
-    SpeechSynthesisUtterance: class { constructor(text) { this.text = text; } },
-    speechSynthesis: { getVoices: () => [voice], speak: (u) => spoken.push(u), cancel: () => cancelled++ },
-    setTimeout: () => 1, clearTimeout: () => {},
+    SpeechSynthesisUtterance: forbidden,
+    speechSynthesis: new Proxy({}, { get: forbidden }),
   });
   const audio = new RailroadAudio();
-  audio.setEffectsVolume(0.4);
-  assert.equal(audio.speakTrain(1), true);
-  assert.equal(spoken[0].text, "Choo Choo, Hey Henry, Let's goooo!");
-  assert.equal(spoken[0].voice, voice);
-  assert.equal(spoken[0].volume, 0.4);
+  audio.tone = () => {};
+  audio.noise = () => {};
+  for (let train = 0; train < 10; train++) audio.playTrain(train);
   audio.setEnabled(false);
-  assert.equal(cancelled, 1);
-  assert.equal(audio.speakTrain(1), false);
-  audio.setEnabled(true);
   audio.setEffectsVolume(0);
-  assert.equal(audio.speakTrain(1), false);
+  audio.setEnabled(true);
+  audio.setEffectsVolume(0.4);
+  audio.destroy();
+  assert.equal(audio.speakTrain, undefined);
 });
 
-test("missing browser audio or speech support is a harmless silent fallback", async () => {
+test("missing browser audio support is a harmless silent fallback", async () => {
   const { RailroadAudio } = loadTs("../lib/railroad-audio.ts");
-  const audio = new RailroadAudio();
-  assert.equal(await audio.start(), false);
-  assert.equal(audio.speakTrain(1), false);
+  assert.equal(await new RailroadAudio().start(), false);
 });

@@ -42,6 +42,10 @@ input {
 }
 
 .railroad-app {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  height: 100vh;
   height: 100dvh;
   min-height: 500px;
   display: grid;
@@ -73,8 +77,8 @@ input {
   position: absolute;
   z-index: 30;
   top: max(18px, env(safe-area-inset-top));
-  left: clamp(14px, 3vw, 42px);
-  right: clamp(14px, 3vw, 42px);
+  left: max(clamp(14px, 3vw, 42px), env(safe-area-inset-left));
+  right: max(clamp(14px, 3vw, 42px), env(safe-area-inset-right));
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -156,6 +160,8 @@ input {
   height: 100%;
   overflow: hidden;
   pointer-events: none;
+  object-fit: contain;
+  object-position: center bottom;
 }
 
 .cloud {
@@ -193,6 +199,8 @@ input {
 .crossing-signal {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   filter: drop-shadow(0 9px 6px rgba(19, 48, 55, 0.28));
 }
 
@@ -249,6 +257,23 @@ input {
 .gate-right.is-running {
   animation: gate-right-course 10s ease-in-out 1 both;
 }
+
+/* These buttons are the actual illustrated objects, so their tap areas move
+   with the gates and never drift away from the visible artwork. */
+.crossing-touch {
+  display: block !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  pointer-events: auto;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.crossing-touch .scene-sprite { width: 100% !important; height: 100% !important; }
+.crossing-touch:focus-visible { outline: 3px dashed #fff2aa; outline-offset: 3px; }
+.crossing-touch[aria-disabled="true"] { cursor: default; }
 
 .train-runner {
   position: absolute;
@@ -388,7 +413,12 @@ input {
 
 .volume-row {
   display: grid;
-  gap: 6px;
+  gap: 0;
+  min-width: 0;
+  padding: 7px 10px 1px;
+  border: 1px solid #7598ac;
+  border-radius: 12px;
+  background: #0d2c40;
 }
 
 .volume-row > span {
@@ -413,12 +443,15 @@ input {
 }
 
 .volume-row [data-slot="slider"] {
-  min-height: 32px;
+  min-height: 44px;
+  cursor: pointer;
 }
 
 .volume-row [data-slot="slider-track"] {
-  height: 8px;
+  height: 12px;
+  border: 1px solid #b8dbea;
   background: #52768a;
+  box-shadow: inset 0 2px 3px #092333;
 }
 
 .volume-row [data-slot="slider-range"] {
@@ -426,12 +459,15 @@ input {
 }
 
 .volume-row [data-slot="slider-thumb"] {
-  width: 20px;
-  height: 20px;
-  border: 3px solid #f4bd32;
-  background: white;
-  box-shadow: 0 2px 8px rgba(4, 23, 35, 0.4);
+  width: 28px;
+  height: 28px;
+  border: 3px solid white;
+  background: #ffc93c;
+  box-shadow: 0 0 0 2px #0b2638, 0 3px 6px #051923;
+  cursor: grab;
 }
+.volume-row [data-slot="slider-thumb"]:active { cursor: grabbing; }
+.volume-row [data-slot="slider-thumb"]:focus-visible { outline: 3px solid #7adeff; outline-offset: 4px; }
 
 .big-buttons {
   display: grid;
@@ -831,10 +867,11 @@ input {
 .panel-options { display: flex; align-items: center; min-height: 42px; }
 .animal-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.76rem; font-weight: 800; }
 .animal-toggle > svg { width: 17px; height: 17px; color: #ffe377; }
-.animal-toggle [data-slot="switch"] { width: 42px; height: 25px; background: #52768a; border: 2px solid #b2d9e6; }
+.animal-toggle [data-slot="switch"] { display: inline-flex; align-items: center; justify-content: flex-start; width: 46px; height: 28px; padding: 3px; background: #38576b; border: 2px solid #b2d9e6; flex-shrink: 0; }
 .animal-toggle [data-slot="switch"][data-state="checked"] { background: #68b95b; }
-.animal-toggle [data-slot="switch-thumb"] { width: 18px; height: 18px; background: white; }
-.animal-toggle [data-slot="switch"][data-state="checked"] [data-slot="switch-thumb"] { transform: translateX(17px); }
+.animal-toggle [data-slot="switch-thumb"] { width: 18px; height: 18px; flex-shrink: 0; background: white; translate: none; transform: translateX(0); box-shadow: 0 1px 3px #15324a80; }
+.animal-toggle [data-slot="switch"][data-state="checked"] [data-slot="switch-thumb"] { transform: translateX(18px); }
+.animal-toggle [data-slot="switch"]:focus-visible { outline: 3px solid #ffe377; outline-offset: 3px; }
 
 .scene-hotspot {
   position: absolute;
@@ -851,6 +888,7 @@ input {
 .scene-hotspot:hover { box-shadow: 0 0 18px 3px rgba(255, 242, 157, 0.55); }
 .scene-hotspot:focus-visible { outline: 3px dashed #fff2aa; outline-offset: 4px; }
 .scene-hotspot[aria-disabled="true"] { cursor: default; }
+.hotspot-track { z-index: 5; border-radius: 18px !important; }
 .surprise-event { position: absolute; inset: 0; pointer-events: none; z-index: 17; }
 .secret-animal { bottom: -3%; width: clamp(145px, 17vw, 230px); aspect-ratio: 1; animation-duration: 4.8s; }
 .secret-tree { left: 6%; }
@@ -901,4 +939,33 @@ input {
 }
 @media (prefers-reduced-motion: reduce) {
   .surprise-particle, .rock-sparkle, .secret-butterfly .scene-sprite { animation-duration: 4s; }
+}
+
+/* Paint right to the device edges; only controls need notch/home-bar insets. */
+@media (orientation: landscape) {
+  .railroad-app { min-height: 0; grid-template-rows: minmax(0, 1fr) auto; }
+  .control-deck {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .control-deck { min-height: 0; grid-template-columns: minmax(235px, 0.65fr) minmax(0, 1.35fr); gap: 12px; }
+  .control-intro { display: block; }
+  .control-kicker, .surprise-note { display: none; }
+  .panel-options { min-height: 32px; }
+  .volume-mixer { gap: 8px; margin-top: 0; }
+  .volume-row { padding: 4px 8px 0; }
+  .volume-row > span { gap: 4px; font-size: 0.63rem; }
+  .volume-row > span strong { font-size: 0.63rem; }
+  .game-button { height: 78px !important; }
+  .game-button > span { font-size: clamp(0.72rem, 1.5vw, 0.96rem); white-space: normal; line-height: 1.1; }
+  .game-button > small { display: none; }
+  .crossing { width: clamp(64px, 10vh, 90px); bottom: 22%; }
+  .crossing-gate { width: clamp(180px, 30vw, 350px); }
+  .game-header { top: max(8px, env(safe-area-inset-top)); }
+  .title-sign .eyebrow, .title-sign p { display: none; }
+  .title-sign h1 { font-size: 1.35rem; }
+  .round-control { width: 40px !important; height: 40px !important; }
 }

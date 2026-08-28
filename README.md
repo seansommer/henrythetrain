@@ -1,10 +1,10 @@
 # Henry the Train
 
 An interactive railroad-crossing scene made for Henry. Push three independent
-controls to send a surprise train across the screen, flash the warning lights,
-or lower and raise the crossing gates.
+controls, or tap the scene itself, to send a surprise train across the screen,
+flash the warning lights, or lower and raise the crossing gates.
 
-**Live game:** https://henry-the-train.fatherearth.chatgpt.site
+**Live game:** https://seansommer.github.io/henrythetrain/
 
 ## What is included
 
@@ -23,17 +23,21 @@ or lower and raise the crossing gates.
 - Smaller control buttons and a shorter panel for more scenery
 - Original procedural music and sound effects made with the Web Audio API
 - Ten signature train sounds with continuous rail rattle and wheel clacks
-- Henry's train says **“Choo Choo, Hey Henry, Let's goooo!”**
+- Train whistles and signature effects only — no browser voice or spoken audio
+- Tap either illustrated signal, either moving gate, or the center rails
+- Bright volume tracks with large handles and a properly aligned animal switch
+- Edge-to-edge landscape framing with safe-area spacing for controls
+- Custom link-sharing artwork, a favicon, and separate mobile home-screen artwork
 - Separate master-sound and music controls plus music and effects sliders
 - Responsive layouts for phones, tablets, laptops, and desktops
 - Keyboard and screen-reader labels for every control
 
 The game has no application accounts, advertising, tracking, Firebase project,
-or saved personal data. The spoken greeting uses browser speech synthesis;
-the voice varies by device. A local English voice is preferred when available.
-If speech is unsupported, the greeting remains on screen and the train still
-plays its whistle and rail sounds. Muting all sound or setting SFX to zero also
-mutes speech. Some browsers apply speech-volume changes on the next utterance.
+or saved personal data. All music and effects are produced locally with Web
+Audio. There is no speech synthesis, voice service, or recorded speech. The
+Henry greeting is an on-screen caption only. Muting all sound or setting SFX to
+zero also mutes the train effects.
+
 
 ## GitHub Pages setup
 
@@ -80,8 +84,9 @@ The artwork in `public/assets/` was created specifically for this project.
 Music and sound effects are synthesized in real time, so there are no
 third-party audio files or licenses to manage.
 
-The new squirrel, turtle, leaf, and butterfly art is in
+The source squirrel, turtle, leaf, and butterfly art is in
 `public/assets/henry-surprise-atlas-v1.png`. `lib/surprise-sprites.json` supplies
-the exact native clipping silhouettes, removing the generated matte and stray
-fragment without repainting the characters. See `docs/surprise-art.md` for the
-generation brief.
+the exact native clipping silhouettes. The game now uses pre-rendered transparent
+PNGs in `public/assets/wildlife/` for reliable mobile rendering. See
+`docs/surprise-art.md` for the original brief and `docs/branding-art.md` for the
+sharing artwork, mobile icons, and sprite export details.

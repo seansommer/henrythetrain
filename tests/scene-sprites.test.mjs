@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import sharp from "sharp";
 
 const sheet = JSON.parse(await readFile(new URL("../lib/scene-sprites.json", import.meta.url), "utf8"));
 const component = await readFile(new URL("../components/scene-sprite.tsx", import.meta.url), "utf8");
@@ -54,5 +55,21 @@ test("new surprise art has independent silhouettes, not square matte crops", asy
   for (const { crop: [x, y, w, h], clip } of Object.values(surprises.sprites)) {
     assert.ok(x >= 0 && y >= 0 && x + w <= surprises.width && y + h <= surprises.height);
     assert.ok(clip.startsWith("M") && clip.endsWith("Z") && clip.length > 100);
+  }
+});
+
+test("every wildlife PNG contains visible colored artwork and real transparency", async () => {
+  for (const name of ["deer", "rabbit", "raccoon", "bear", "blue-birds", "brown-birds", "squirrel", "turtle", "leaf", "butterfly"]) {
+    const file = new URL(`../public/assets/wildlife/${name}.png`, import.meta.url).pathname;
+    assert.equal((await sharp(file).metadata()).hasAlpha, true, name);
+    const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let clear = 0, colored = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] === 0) clear++;
+      if (data[i + 3] > 128 && Math.max(...data.subarray(i, i + 3)) - Math.min(...data.subarray(i, i + 3)) > 15) colored++;
+    }
+    const area = info.width * info.height;
+    assert.ok(clear > area * 0.1, `${name}: no opaque white/checkerboard rectangle`);
+    assert.ok(colored > area * 0.08, `${name}: not a blank or white sprite`);
   }
 });

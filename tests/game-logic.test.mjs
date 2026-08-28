@@ -4,7 +4,7 @@ import test from "node:test";
 import { loadTs } from "./load-ts.mjs";
 
 const { TRAIN_PROFILES, HENRY_GREETING, shuffledBag, availableSurprises, TRAIN_RUN_MS, LIGHT_RUN_MS, GATE_RUN_MS } = loadTs("../lib/train-profiles.ts");
-const { sceneHotspots } = loadTs("../lib/scene-hotspots.ts");
+const { sceneHotspots, trackHotspot } = loadTs("../lib/scene-hotspots.ts");
 const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 
 test("ten trains have unique signatures and verified forward directions", () => {
@@ -55,4 +55,27 @@ test("independent actions have busy guards and complete even if audio fails", ()
     assert.ok(section.indexOf(`}, ${duration}_RUN_MS)`) < section.indexOf("await ensureAudio()"));
   }
   assert.match(page, /schedule\(\(\) => setTitleVisible\(false\), 5_000\)/);
+});
+
+
+test("track taps follow the painted rails after resizing and rotation", () => {
+  for (const [w, h] of [[320, 300], [390, 530], [768, 700], [1440, 752], [844, 260], [932, 230], [320, 720], [1920, 400]]) {
+    const target = trackHotspot(w, h);
+    const scale = Math.max(w / 1672, h / 941);
+    const railY = 596 * scale + (h - 941 * scale) * (w <= 560 ? 0.65 : 0.59);
+    assert.equal(target.x, w / 2);
+    assert.ok(target.width >= 140 && target.height >= 56);
+    assert.ok(target.x - target.width / 2 >= 0 && target.x + target.width / 2 <= w);
+    assert.ok(target.y - target.height / 2 >= 0 && target.y + target.height / 2 <= h);
+    assert.ok(Math.abs(target.y - railY) <= target.height / 2, `${w}x${h}: center rails must be tappable`);
+  }
+});
+
+test("illustrated signals, gates, and track share the guarded button actions", () => {
+  for (const name of ["Train", "Lights", "Gates"]) {
+    assert.equal((page.match(new RegExp(`onClick=\\{trigger${name}\\}`, "g")) ?? []).length, 2);
+  }
+  assert.match(page, /className=\{`crossing crossing-\$\{side\}`\}>/);
+  assert.match(page, /setTrackBounds\(trackHotspot\(element.clientWidth, element.clientHeight\)\)/);
+  assert.doesNotMatch(page, /speakTrain|speechSynthesis/);
 });

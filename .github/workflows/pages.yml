@@ -23,7 +23,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Check game logic and sprite masks
-        run: node --test tests/scene-sprites.test.mjs tests/game-logic.test.mjs tests/audio.test.mjs
+        run: node --test tests/scene-sprites.test.mjs tests/game-logic.test.mjs tests/audio.test.mjs tests/ui-components.test.mjs
       - name: Export static game
         run: npm run build:pages
       - name: Validate exported Pages assets

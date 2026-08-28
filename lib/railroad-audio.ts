@@ -17,8 +17,6 @@ export class RailroadAudio {
   private effects: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
   private musicTimer: ReturnType<typeof setInterval> | null = null;
-  private speechTimer: ReturnType<typeof setTimeout> | null = null;
-  private speech: SpeechSynthesisUtterance | null = null;
   private musicStep = 0;
   private enabled = true;
   private musicEnabled = true;
@@ -50,15 +48,12 @@ export class RailroadAudio {
 
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
-    if (!enabled) this.cancelSpeech();
     this.syncLevels();
   }
   setMusicEnabled(enabled: boolean) { this.musicEnabled = enabled; this.syncLevels(); }
   setMusicVolume(level: number) { this.musicLevel = Math.min(1, Math.max(0, level)); this.syncLevels(); }
   setEffectsVolume(level: number) {
     this.effectsLevel = Math.min(1, Math.max(0, level));
-    if (this.effectsLevel === 0) this.cancelSpeech();
-    if (this.speech) this.speech.volume = this.effectsLevel;
     this.syncLevels();
   }
 
@@ -182,36 +177,6 @@ export class RailroadAudio {
     if (profile.kind === "electric") this.tone({ frequency: profile.rumble * 2, endFrequency: profile.rumble * 4, duration: Math.min(remaining, 5), volume: 0.035 });
   }
 
-  /** Called in the original tap handler, before awaiting AudioContext unlock. */
-  speakTrain(train: number) {
-    const profile = TRAIN_PROFILES[train];
-    if (!profile || !this.enabled || this.effectsLevel === 0 || typeof speechSynthesis === "undefined" || typeof SpeechSynthesisUtterance === "undefined") return false;
-    const text = "greeting" in profile ? profile.greeting : profile.kind === "steam" && Math.random() < 0.3 ? "Choo choo!" : null;
-    if (!text) return false;
-    this.cancelSpeech();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = speechSynthesis.getVoices();
-    const voice = voices.find((v) => v.localService && /^en\b/i.test(v.lang)) ?? voices.find((v) => /^en\b/i.test(v.lang));
-    if (voice) utterance.voice = voice;
-    utterance.lang = voice?.lang ?? "en-US";
-    utterance.rate = 0.91;
-    utterance.pitch = 1.15;
-    utterance.volume = this.effectsLevel;
-    this.speech = utterance;
-    utterance.onend = utterance.onerror = () => { if (this.speech === utterance) this.speech = null; };
-    try {
-      speechSynthesis.speak(utterance);
-      this.speechTimer = setTimeout(() => this.cancelSpeech(), TRAIN_RUN_MS);
-      return true;
-    } catch { this.speech = null; return false; }
-  }
-
-  private cancelSpeech() {
-    if (this.speechTimer) clearTimeout(this.speechTimer);
-    this.speechTimer = null;
-    if (this.speech && typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
-    this.speech = null;
-  }
   playChirp() {
     this.tone({ frequency: 1220, endFrequency: 1780, duration: 0.12, volume: 0.055 });
     this.tone({ frequency: 1420, endFrequency: 2050, duration: 0.1, volume: 0.05, when: 0.16 });
@@ -227,7 +192,6 @@ export class RailroadAudio {
   destroy() {
     if (this.musicTimer) clearInterval(this.musicTimer);
     this.musicTimer = null;
-    this.cancelSpeech();
     void this.context?.close().catch(() => {});
     this.context = null;
     this.noiseBuffer = null;

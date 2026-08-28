@@ -8,7 +8,7 @@ import { assetUrl } from "@/lib/asset-url";
 import { SurpriseSprite } from "@/components/surprise-sprite";
 import { RailroadAudio } from "@/lib/railroad-audio";
 import { TRAIN_PROFILES, TRAIN_RUN_MS, LIGHT_RUN_MS, GATE_RUN_MS, HENRY_GREETING, shuffledBag, availableSurprises, type SurpriseTarget, type SurpriseKind } from "@/lib/train-profiles";
-import { sceneHotspots, type Hotspot } from "@/lib/scene-hotspots";
+import { sceneHotspots, trackHotspot, type Hotspot } from "@/lib/scene-hotspots";
 import { SceneSprite, type SceneSpriteName } from "@/components/scene-sprite";
 import {
   Bird,
@@ -73,6 +73,7 @@ export default function Home() {
   const [animalsEnabled, setAnimalsEnabled] = useState(true);
   const [surprises, setSurprises] = useState<Partial<Record<SurpriseTarget, ActiveSurprise>>>({});
   const [hotspots, setHotspots] = useState<Record<SurpriseTarget, Hotspot> | null>(null);
+  const [trackBounds, setTrackBounds] = useState<Hotspot | null>(null);
   const [titleVisible, setTitleVisible] = useState(true);
   const [announcement, setAnnouncement] = useState("Henry's railroad is ready!");
   const audio = useRef<RailroadAudio | null>(null);
@@ -111,7 +112,10 @@ export default function Home() {
   useEffect(() => {
     if (!stage.current) return;
     const element = stage.current;
-    const update = () => setHotspots(sceneHotspots(element.clientWidth, element.clientHeight));
+    const update = () => {
+      setHotspots(sceneHotspots(element.clientWidth, element.clientHeight));
+      setTrackBounds(trackHotspot(element.clientWidth, element.clientHeight));
+    };
     update();
     const observer = new ResizeObserver(update);
     observer.observe(element);
@@ -206,13 +210,11 @@ export default function Home() {
       setAnnouncement("The track is clear. What will come next?");
       trainBusy.current = false;
     }, TRAIN_RUN_MS);
-    // Speech must be requested during the tap, not after the audio unlock promise.
-    prepareAudio().speakTrain(chosen);
     if (await ensureAudio()) {
       audio.current?.playButton();
       audio.current?.playTrain(chosen, (performance.now() - started) / 1000);
     }
-  }, [beginGame, ensureAudio, prepareAudio, pullTrain, schedule]);
+  }, [beginGame, ensureAudio, pullTrain, schedule]);
 
   const triggerLights = async () => {
     if (lightsBusy.current) return;
@@ -329,16 +331,31 @@ export default function Home() {
         </header>
 
         {(["left", "right"] as const).map((side) => (
-          <div key={side} className={`crossing crossing-${side}`} aria-hidden="true">
-            <div className={`crossing-signal ${lightsActive ? "is-flashing" : ""}`}>
+          <div key={side} className={`crossing crossing-${side}`}>
+            <Button type="button" variant="ghost"
+              className={`crossing-signal crossing-touch ${lightsActive ? "is-flashing" : ""}`}
+              onClick={triggerLights} aria-label={`Flash the lights: ${side} crossing signal`}
+              aria-disabled={lightsActive} aria-busy={lightsActive}>
               <SceneSprite name={`signal-${side}`} />
-            </div>
-            <div className={`crossing-gate gate-${side} ${gatesActive ? "is-running" : ""}`}>
-              <div className="gate-beam"><SceneSprite name={`beam-${side}`} stretch /></div>
-              <div className="gate-hinge"><SceneSprite name={`hinge-${side}`} /></div>
-            </div>
+            </Button>
+            <Button type="button" variant="ghost"
+              className={`crossing-gate crossing-touch gate-${side} ${gatesActive ? "is-running" : ""}`}
+              onClick={triggerGates} aria-label={`Lower the gates: ${side} crossing gate`}
+              aria-disabled={gatesActive} aria-busy={gatesActive}>
+              <span className="gate-beam"><SceneSprite name={`beam-${side}`} stretch /></span>
+              <span className="gate-hinge"><SceneSprite name={`hinge-${side}`} /></span>
+            </Button>
           </div>
         ))}
+
+        {trackBounds && (
+          <Button type="button" variant="ghost" className="scene-hotspot hotspot-track"
+            style={{ left: trackBounds.x, top: trackBounds.y, width: trackBounds.width, height: trackBounds.height }}
+            onClick={triggerTrain} aria-label="Send a train: tap the middle of the railroad track"
+            aria-disabled={trainActive} aria-busy={trainActive}>
+            <span className="sr-only">Send a train</span>
+          </Button>
+        )}
 
         {hotspots && (["tree", "rock"] as const).map((target) => (
           <SceneHotspot key={target} target={target} bounds={hotspots[target]} active={Boolean(surprises[target])} onExplore={triggerSurprise} />
@@ -405,7 +422,7 @@ export default function Home() {
             {audioStarted ? "Sounds are ready" : "Your first tap starts the music"}
           </span>
           <div className="volume-mixer" aria-label="Volume controls">
-            <label className="volume-row">
+            <div className="volume-row">
               <span>
                 <Music2 aria-hidden="true" />
                 Music
@@ -417,10 +434,11 @@ export default function Home() {
                 max={100}
                 step={1}
                 aria-label="Background music volume"
+                aria-valuetext={`${musicVolume} percent`}
                 onValueChange={(value) => setMusicVolume(value[0] ?? 0)}
               />
-            </label>
-            <label className="volume-row">
+            </div>
+            <div className="volume-row">
               <span>
                 <Volume2 aria-hidden="true" />
                 Sound effects
@@ -432,9 +450,10 @@ export default function Home() {
                 max={100}
                 step={1}
                 aria-label="Sound effects volume"
+                aria-valuetext={`${effectsVolume} percent`}
                 onValueChange={(value) => setEffectsVolume(value[0] ?? 0)}
               />
-            </label>
+            </div>
           </div>
         </div>
 
