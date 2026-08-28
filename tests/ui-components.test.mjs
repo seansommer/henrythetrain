@@ -4,20 +4,22 @@ import test from "node:test";
 
 const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+const profiles = await readFile(new URL("../lib/train-profiles.ts", import.meta.url), "utf8");
+const sprites = await readFile(new URL("../lib/scene-sprites.json", import.meta.url), "utf8");
 
 test("defines ten named surprise trains including Henry's express", () => {
-  assert.match(page, /Henry's Blue Express/);
-  assert.match(page, /const TRAIN_COUNT = 10/);
-  assert.match(page, /Rainbow Celebration/);
+  assert.match(profiles, /Henry's Blue Express/);
+  assert.equal((profiles.match(/name: "/g) ?? []).length, 10);
+  assert.match(profiles, /Rainbow Celebration/);
 });
 
 test("each main action has an independent non-restart guard", () => {
   assert.match(page, /if \(trainBusy\.current\) return/);
   assert.match(page, /if \(lightsBusy\.current\) return/);
   assert.match(page, /if \(gatesBusy\.current\) return/);
-  assert.match(page, /const TRAIN_RUN_MS = 9_000/);
-  assert.match(page, /const LIGHT_RUN_MS = 10_000/);
-  assert.match(page, /const GATE_RUN_MS = 10_000/);
+  assert.match(profiles, /const TRAIN_RUN_MS = 9_000/);
+  assert.match(profiles, /const LIGHT_RUN_MS = 10_000/);
+  assert.match(profiles, /const GATE_RUN_MS = 10_000/);
 });
 
 test("the game includes randomized wildlife and bird timing", () => {
@@ -28,9 +30,9 @@ test("the game includes randomized wildlife and bird timing", () => {
 });
 
 test("all scene artwork is backed by project assets", () => {
-  assert.match(css, /railroad-world\.webp/);
-  assert.match(css, /ten-trains-v2\.webp/);
-  assert.match(css, /railroad-friends-v2\.webp/);
+  assert.match(page, /railroad-world\.webp/);
+  assert.match(page, /ten-trains-v2\.webp/);
+  assert.match(sprites, /railroad-friends-v2\.webp/);
 });
 
 test("responsive and reduced-motion rules are present", () => {
@@ -40,7 +42,7 @@ test("responsive and reduced-motion rules are present", () => {
 });
 
 test("train sprites travel nose-first in their confirmed direction", () => {
-  assert.match(page, /const TRAIN_DIRECTIONS = \[/);
+  assert.match(page, /TRAIN_PROFILES\[activeTrain\]\.direction/);
   assert.match(page, /direction-\$\{trainDirection\}/);
   assert.match(css, /@keyframes train-pass-right/);
   assert.match(css, /@keyframes train-pass-left/);

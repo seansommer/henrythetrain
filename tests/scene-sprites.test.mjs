@@ -6,8 +6,8 @@ const sheet = JSON.parse(await readFile(new URL("../lib/scene-sprites.json", imp
 const component = await readFile(new URL("../components/scene-sprite.tsx", import.meta.url), "utf8");
 const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 
-test("all eight wildlife and cloud sprites have explicit in-bounds crops", () => {
-  assert.equal(Object.keys(sheet.sprites).length, 8);
+test("all wildlife, clouds, and crossing parts have explicit in-bounds crops", () => {
+  assert.equal(Object.keys(sheet.sprites).length, 14);
   for (const [name, [x, y, width, height]] of Object.entries(sheet.sprites)) {
     assert.ok(x >= 0 && y >= 0 && width > 0 && height > 0, name);
     assert.ok(x + width <= sheet.width && y + height <= sheet.height, name);
@@ -29,10 +29,30 @@ test("flying sprite crops exclude the animals above them", () => {
 
 test("sprite viewports clip the atlas instead of repeating equal grid cells", () => {
   assert.match(component, /viewBox=\{`\$\{x\} \$\{y\} \$\{width\} \$\{height\}`\}/);
-  assert.match(component, /<image href=\{sheet.atlas\}/);
+  assert.match(component, /<image href=\{assetUrl\(sheet.atlas\)\}/);
   assert.match(css, /\.scene-sprite\s*\{[^}]*overflow:\s*hidden/s);
   for (const selector of ["cloud", "bird-flock", "animal-friend"]) {
     const rule = css.match(new RegExp(`\\.${selector}\\s*\\{([^}]+)\\}`))[1];
     assert.doesNotMatch(rule, /background-size|background-position|background-image/);
+  }
+});
+
+test("gate hinges and arms exclude all animal rows and use separate viewports", () => {
+  for (const name of ["hinge-left", "hinge-right", "beam-left", "beam-right"]) {
+    const [, y, , height] = sheet.sprites[name];
+    assert.ok(y + height < 410, name);
+  }
+  assert.match(css, /transform-origin: 21px 32px/);
+  assert.match(css, /transform-origin: calc\(100% - 21px\) 32px/);
+  assert.match(css, /width: clamp\(265px, 37vw, 640px\)/);
+  assert.doesNotMatch(css, /background-size: 400% 300%/);
+});
+
+test("new surprise art has independent silhouettes, not square matte crops", async () => {
+  const surprises = JSON.parse(await readFile(new URL("../lib/surprise-sprites.json", import.meta.url), "utf8"));
+  assert.equal(Object.keys(surprises.sprites).length, 4);
+  for (const { crop: [x, y, w, h], clip } of Object.values(surprises.sprites)) {
+    assert.ok(x >= 0 && y >= 0 && x + w <= surprises.width && y + h <= surprises.height);
+    assert.ok(clip.startsWith("M") && clip.endsWith("Z") && clip.length > 100);
   }
 });
