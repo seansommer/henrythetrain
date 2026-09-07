@@ -304,7 +304,10 @@ export default function Home() {
             <h1>Henry the Train</h1>
             <p>What will come by next?</p>
           </div>
-          <div className="sound-controls" aria-label="Sound controls">
+          <div className="sound-controls" aria-label="Game navigation and sound controls">
+            <a className="game-center-shortcut" href="https://seansommer.github.io/gamecenter/" target="_top" aria-label="Return to Game Center" title="Game Center">
+              <img src={assetUrl("/game-center-icon.png")} width="36" height="36" alt="" />
+            </a>
             <Button
               type="button"
               variant="secondary"
@@ -500,6 +503,10 @@ export default function Home() {
           <Bird aria-hidden="true" />
           <span>Try touching a tree or a rock. There are secrets to discover!</span>
         </div>
+        <a className="game-center-footer" href="https://seansommer.github.io/gamecenter/" target="_top">
+          <img src={assetUrl("/game-center-icon.png")} width="22" height="22" alt="" />
+          <span>Game Center</span>
+        </a>
       </section>
     </main>
   );

@@ -969,3 +969,13 @@ input {
   .title-sign h1 { font-size: 1.35rem; }
   .round-control { width: 40px !important; height: 40px !important; }
 }
+
+/* Return to the collection through the existing controls, without a second header. */
+.game-center-shortcut { display:grid; place-items:center; width:44px; height:44px; flex:0 0 44px; border-radius:14px; pointer-events:auto; }
+.game-center-shortcut img { display:block; width:36px; height:36px; border-radius:11px; box-shadow:0 3px 10px #173d4f40; }
+.game-center-shortcut:hover img { box-shadow:0 0 0 3px #ffc575; }
+.game-center-shortcut:focus-visible, .game-center-footer:focus-visible { outline:3px solid #d57b27; outline-offset:4px; }
+.game-center-footer { display:flex; align-items:center; justify-content:center; gap:7px; min-height:30px; margin-top:0; grid-column:1 / -1; justify-self:center; font-size:10px; font-weight:800; color:#f3d393; text-decoration:none; }
+.game-center-footer img { border-radius:6px; }
+@media(max-width:560px) { .game-center-shortcut { width:36px; height:40px; flex-basis:36px; } .game-center-shortcut img { width:32px; height:32px; } }
+@media(max-width:560px) { .title-sign { max-width:calc(100% - 148px); } }
