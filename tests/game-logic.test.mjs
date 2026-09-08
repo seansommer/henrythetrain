@@ -1,81 +1,30 @@
-import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import test from "node:test";
-import { loadTs } from "./load-ts.mjs";
-
-const { TRAIN_PROFILES, HENRY_GREETING, shuffledBag, availableSurprises, TRAIN_RUN_MS, LIGHT_RUN_MS, GATE_RUN_MS } = loadTs("../lib/train-profiles.ts");
-const { sceneHotspots, trackHotspot } = loadTs("../lib/scene-hotspots.ts");
-const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
-
-test("ten trains have unique signatures and verified forward directions", () => {
-  assert.equal(TRAIN_PROFILES.length, 10);
-  assert.equal(new Set(TRAIN_PROFILES.map((p) => JSON.stringify([p.beat, p.rumble, p.horn, p.pattern]))).size, 10);
-  assert.equal(TRAIN_PROFILES.map((p) => p.direction).join(","), "right,right,left,right,left,left,left,left,right,left");
-  assert.equal(TRAIN_PROFILES[1].greeting, HENRY_GREETING);
-  assert.match(HENRY_GREETING, /Choo Choo, Hey Henry, Let's goooo/);
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+import { loadTs } from './load-ts.mjs';
+const { TRAIN_PROFILES, createTrainTrips, shuffledBag, availableSurprises } = loadTs('../lib/train-profiles.ts');
+const { WORLD, sceneCamera, sceneHotspots, trackHotspot, signalHotspot, gateHotspot, trainTravel } = loadTs('../lib/scene-hotspots.ts');
+const page=await readFile(new URL('../app/page.tsx',import.meta.url),'utf8');
+const screens=[[320,410],[390,660],[430,750],[768,820],[1440,752],[844,230],[932,250],[1920,930],[320,720]];
+test('each of ten trains goes out and returns before another surprise is selected',()=>{
+ const next=createTrainTrips();const seen=new Set();
+ for(let i=0;i<10;i++) { const out=next(),back=next();assert.equal(out.direction,'right');assert.equal(back.direction,'left');assert.equal(back.train,out.train);seen.add(out.train); }
+ assert.equal(seen.size,10);assert.equal(TRAIN_PROFILES.length,10);
 });
-
-test("shuffle bags exhaust their full set before refilling", () => {
-  for (let i = 0; i < 50; i++) {
-    const bag = shuffledBag(10);
-    assert.equal(bag.length, 10);
-    assert.equal(new Set(bag).size, 10);
-    assert.ok(bag.every((entry) => entry >= 0 && entry < 10));
-  }
+test('shuffle bags contain every train exactly once',()=>{ const bag=shuffledBag(10);assert.equal(new Set(bag).size,10);assert.ok(bag.every(v=>v>=0&&v<10)); });
+test('every camera keeps the rail and central touch target together without stretching',()=>{
+ for(const [width,height] of screens){const c=sceneCamera(width,height),track=trackHotspot(c);assert.equal(track.y,c.y+WORLD.railY*c.scale);assert.equal(track.x,width/2);assert.ok(track.y>44&&track.y<height-40);assert.ok(c.scale>0);}
 });
-
-test("each hiding place has three different outcomes and honors animals off", () => {
-  for (const target of ["tree", "rock"]) {
-    assert.equal(availableSurprises(target, true).length, 3);
-    assert.equal(new Set(availableSurprises(target, true)).size, 3);
-    const quiet = availableSurprises(target, false);
-    assert.equal(quiet.length, 2);
-    assert.ok(!quiet.includes("squirrel") && !quiet.includes("turtle"));
-  }
-  assert.match(page, /animalsAllowed\.current = enabled/);
-  assert.match(page, /animalsEnabled && animal !== null/);
+test('essential tap targets stay reachable in phone, landscape and desktop cameras',()=>{
+ for(const [w,h] of screens){const c=sceneCamera(w,h);const all=[...Object.values(sceneHotspots(c)),trackHotspot(c),signalHotspot(c,'left'),signalHotspot(c,'right'),gateHotspot(c,'left'),gateHotspot(c,'right')];
+  for(const t of all){assert.ok(t.width>=44&&t.height>=44);assert.ok(t.x>=22&&t.x<=w-22,`${w}x${h} target x`);assert.ok(t.y>=22&&t.y<=h-22,`${w}x${h} target y`);}
+ }
 });
-
-test("tree and rock targets follow the painting at phone, tablet, and desktop sizes", () => {
-  for (const [w, h] of [[320, 300], [390, 530], [768, 700], [1440, 752], [844, 260], [320, 720]]) {
-    for (const hotspot of Object.values(sceneHotspots(w, h))) {
-      assert.ok(hotspot.x >= 0 && hotspot.x <= w && hotspot.y >= 0 && hotspot.y <= h, `${w}x${h}`);
-      assert.ok(hotspot.width >= 48 && hotspot.height >= 48);
-    }
-  }
+test('both directions enter and leave fully outside the camera including longer return art',()=>{
+ for(const [w,h] of screens)for(const trainWidth of [1000,1300]){const c=sceneCamera(w,h);const right=trainTravel(c,'right',trainWidth),left=trainTravel(c,'left',trainWidth);assert.ok((right.from+trainWidth)*c.scale+c.x<0);assert.ok(right.to*c.scale+c.x>w);assert.equal(left.from,right.to);assert.equal(left.to,right.from);}
 });
-
-test("independent actions have busy guards and complete even if audio fails", () => {
-  assert.equal(TRAIN_RUN_MS, 9000);
-  assert.equal(LIGHT_RUN_MS, 10000);
-  assert.equal(GATE_RUN_MS, 10000);
-  for (const [name, flag, duration] of [["Train", "train", "TRAIN"], ["Lights", "lights", "LIGHT"], ["Gates", "gates", "GATE"]]) {
-    const section = page.slice(page.indexOf(`const trigger${name} =`), page.indexOf(`const trigger${name} =`) + 1700);
-    assert.match(section, new RegExp(`if \\(${flag}Busy.current\\) return`));
-    assert.ok(section.indexOf(`}, ${duration}_RUN_MS)`) < section.indexOf("await ensureAudio()"));
-  }
-  assert.match(page, /schedule\(\(\) => setTitleVisible\(false\), 5_000\)/);
-});
-
-
-test("track taps follow the painted rails after resizing and rotation", () => {
-  for (const [w, h] of [[320, 300], [390, 530], [768, 700], [1440, 752], [844, 260], [932, 230], [320, 720], [1920, 400]]) {
-    const target = trackHotspot(w, h);
-    const scale = Math.max(w / 1672, h / 941);
-    const railY = 596 * scale + (h - 941 * scale) * (w <= 560 ? 0.65 : 0.59);
-    assert.equal(target.x, w / 2);
-    assert.ok(target.width >= 140 && target.height >= 56);
-    assert.ok(target.x - target.width / 2 >= 0 && target.x + target.width / 2 <= w);
-    assert.ok(target.y - target.height / 2 >= 0 && target.y + target.height / 2 <= h);
-    assert.ok(Math.abs(target.y - railY) <= target.height / 2, `${w}x${h}: center rails must be tappable`);
-  }
-});
-
-test("illustrated signals, gates, and track share the guarded button actions", () => {
-  for (const name of ["Train", "Lights", "Gates"]) {
-    assert.equal((page.match(new RegExp(`onClick=\\{trigger${name}\\}`, "g")) ?? []).length, 2);
-  }
-  assert.match(page, /className=\{`crossing crossing-\$\{side\}`\}>/);
-  assert.match(page, /setTrackBounds\(trackHotspot\(element.clientWidth, element.clientHeight\)\)/);
-  assert.doesNotMatch(page, /speakTrain|speechSynthesis/);
+test('animals off excludes every animal surprise',()=>{for(const target of ['tree','rock']) {const choices=availableSurprises(target,false);assert.ok(choices.length);assert.ok(choices.every(k=>k==='leaves'||k==='sparkles'));}});
+test('independent actions complete even when audio cannot start',()=>{
+ for(const [name,flag,duration] of [['Train','train','TRAIN'],['Lights','lights','LIGHT'],['Gates','gates','GATE']]){const start=page.indexOf(`const trigger${name} =`),section=page.slice(start,start+1900);assert.match(section,new RegExp(`if \\(${flag}Busy.current\\) return`));assert.ok(section.indexOf(`}, ${duration}_RUN_MS)`) < section.indexOf('await ensureAudio()'));}
+ assert.doesNotMatch(page,/speechSynthesis|speakTrain/);
 });

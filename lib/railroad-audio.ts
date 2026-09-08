@@ -1,4 +1,5 @@
 import { TRAIN_PROFILES, TRAIN_RUN_MS } from "./train-profiles";
+import { assetUrl } from "./asset-url";
 
 type ToneOptions = {
   frequency: number;
@@ -16,6 +17,8 @@ export class RailroadAudio {
   private music: GainNode | null = null;
   private effects: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
+  private trainBuffers = new Map<number, Promise<AudioBuffer>>();
+  private trainSource: AudioBufferSourceNode | null = null;
   private musicTimer: ReturnType<typeof setInterval> | null = null;
   private musicStep = 0;
   private enabled = true;
@@ -35,7 +38,10 @@ export class RailroadAudio {
       this.effects.gain.value = this.effectsLevel * 0.88;
       this.music.connect(this.master);
       this.effects.connect(this.master);
-      this.master.connect(this.context.destination);
+      const limiter = this.context.createDynamicsCompressor();
+      limiter.threshold.value = -12; limiter.knee.value = 18; limiter.ratio.value = 6;
+      limiter.attack.value = .006; limiter.release.value = .18;
+      this.master.connect(limiter); limiter.connect(this.context.destination);
       this.noiseBuffer = this.context.createBuffer(1, this.context.sampleRate * 2, this.context.sampleRate);
       const samples = this.noiseBuffer.getChannelData(0);
       for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
@@ -147,34 +153,36 @@ export class RailroadAudio {
     this.tone({ frequency: 620, duration: 0.09, volume: 0.06, when: 1.55, type: "square" });
   }
 
-  playTrain(train: number, elapsed = 0) {
-    const profile = TRAIN_PROFILES[train];
-    if (!profile) return;
-    const duration = TRAIN_RUN_MS / 1000;
-    const remaining = duration - elapsed;
-    if (remaining <= 0) return;
-    // A continuous low wheel bed, then two wheelsets hitting each rail joint.
-    this.noise(0, remaining, 0.27, profile.rumble * 2, "lowpass");
-    this.noise(0, remaining, 0.065, 1050);
-    for (let beat = 0.45; beat < duration - 0.28; beat += profile.beat) {
-      if (beat < elapsed) continue;
-      const when = beat - elapsed;
-      const pass = Math.max(0.12, Math.sin(Math.PI * beat / duration));
-      this.noise(when, 0.075, 0.28 * pass, 680 + profile.rumble);
-      this.noise(when + 0.085, 0.055, 0.20 * pass, 1240 + profile.rumble);
-      this.tone({ frequency: profile.rumble, endFrequency: profile.rumble * 0.6, when, duration: 0.10, volume: 0.065 * pass, type: "triangle" });
-      if (profile.kind === "steam") this.noise(when + 0.13, 0.13, 0.085 * pass, 1850, "highpass");
+  async playTrain(train: number, elapsed = 0, direction: "left" | "right" = "right") {
+    const context = this.context;
+    if (!context || !this.effects || !TRAIN_PROFILES[train] || elapsed >= TRAIN_RUN_MS / 1000) return;
+    const began = Date.now();
+    let loading = this.trainBuffers.get(train);
+    if (!loading) {
+      loading = fetch(assetUrl(`/assets/audio/train-${train}-v3.mp3`)).then(response => {
+        if (!response.ok) throw new Error("Train sound unavailable");
+        return response.arrayBuffer();
+      }).then(data => context.decodeAudioData(data));
+      this.trainBuffers.set(train, loading);
     }
-    // Recognizable signature patterns are fixed, not regenerated every visit.
-    profile.pattern.forEach((when, index) => {
-      if (when < elapsed) return;
-      const pitches = profile.kind === "toy" ? [profile.horn[index % profile.horn.length]] : profile.horn;
-      pitches.forEach((frequency) => this.tone({ frequency, endFrequency: frequency * 0.97, when: when - elapsed,
-        duration: profile.kind === "diesel" ? 1.05 : 0.48,
-        volume: profile.kind === "diesel" ? 0.055 : 0.06,
-        type: profile.kind === "steam" ? "sine" : "triangle" }));
-    });
-    if (profile.kind === "electric") this.tone({ frequency: profile.rumble * 2, endFrequency: profile.rumble * 4, duration: Math.min(remaining, 5), volume: 0.035 });
+    let buffer: AudioBuffer;
+    try { buffer = await loading; }
+    catch { this.trainBuffers.delete(train); return; }
+    if (this.context !== context || context.state !== "running") return;
+    const offset = Math.max(0, elapsed + (Date.now() - began) / 1000);
+    if (offset >= buffer.duration) return;
+    try { this.trainSource?.stop(); } catch { /* already ended */ }
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    const panner = context.createStereoPanner();
+    const start = context.currentTime;
+    const sign = direction === "right" ? 1 : -1;
+    panner.pan.setValueAtTime(sign * (-.85 + 1.7 * offset / buffer.duration), start);
+    panner.pan.linearRampToValueAtTime(sign * .85, start + buffer.duration - offset);
+    source.connect(panner); panner.connect(this.effects);
+    this.trainSource = source;
+    source.onended = () => { source.disconnect(); panner.disconnect(); if (this.trainSource === source) this.trainSource = null; };
+    source.start(start, offset);
   }
 
   playChirp() {
@@ -195,5 +203,7 @@ export class RailroadAudio {
     void this.context?.close().catch(() => {});
     this.context = null;
     this.noiseBuffer = null;
+    this.trainSource = null;
+    this.trainBuffers.clear();
   }
 }

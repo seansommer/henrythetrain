@@ -1,18 +1,18 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { Hotspot } from "@/lib/scene-hotspots";
-import type { SurpriseTarget } from "@/lib/train-profiles";
 
-export function SceneHotspot({ target, bounds, active, onExplore }: {
-  target: SurpriseTarget;
-  bounds: Hotspot;
-  active: boolean;
-  onExplore: (target: SurpriseTarget) => void;
+/** Feedback belongs to the tap, never to the length of the action. */
+export function SceneHotspot({ bounds, active, label, onActivate, className = "" }: {
+  bounds: Hotspot; active: boolean; label: string; onActivate: () => void; className?: string;
 }) {
+  const [tap, setTap] = useState(0);
   return (
-    <Button type="button" variant="ghost" className={`scene-hotspot hotspot-${target}`}
-      style={{ left: bounds.x, top: bounds.y, width: bounds.width, height: bounds.height }}
-      onClick={() => onExplore(target)} aria-label={`Explore the ${target}: discover a surprise`} aria-disabled={active}>
-      <span className="sr-only">Explore the {target}</span>
+    <Button type="button" variant="ghost" className={`scene-hotspot ${className}`}
+      style={{ left: bounds.x, top: bounds.y, width: bounds.width, height: bounds.height, transform: `translate(-50%,-50%) rotate(${bounds.rotation || 0}deg)` }}
+      onClick={() => { if (!active) { setTap(value => value + 1); onActivate(); } }}
+      aria-label={label} aria-disabled={active}>
+      {tap > 0 && <span key={tap} className="tap-ring" aria-hidden="true" />}
     </Button>
   );
 }

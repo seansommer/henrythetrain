@@ -7,8 +7,8 @@ import { SceneHotspot } from "@/components/scene-hotspot";
 import { assetUrl } from "@/lib/asset-url";
 import { SurpriseSprite } from "@/components/surprise-sprite";
 import { RailroadAudio } from "@/lib/railroad-audio";
-import { TRAIN_PROFILES, TRAIN_RUN_MS, LIGHT_RUN_MS, GATE_RUN_MS, HENRY_GREETING, shuffledBag, availableSurprises, type SurpriseTarget, type SurpriseKind } from "@/lib/train-profiles";
-import { sceneHotspots, trackHotspot, type Hotspot } from "@/lib/scene-hotspots";
+import { TRAIN_PROFILES, TRAIN_RUN_MS, LIGHT_RUN_MS, GATE_RUN_MS, HENRY_GREETING, shuffledBag, availableSurprises, createTrainTrips, type TrainTrip, type SurpriseTarget, type SurpriseKind } from "@/lib/train-profiles";
+import { WORLD, SIGNALS, GATES, SCENE_TARGETS, sceneCamera, sceneHotspots, trackHotspot, signalHotspot, gateHotspot, trainTravel } from "@/lib/scene-hotspots";
 import { SceneSprite, type SceneSpriteName } from "@/components/scene-sprite";
 import {
   Bird,
@@ -19,6 +19,8 @@ import {
   TrainFront,
   Volume2,
   VolumeX,
+  Settings2,
+  X,
 } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -61,6 +63,7 @@ function useTimeoutRegistry() {
 export default function Home() {
   const [trainActive, setTrainActive] = useState(false);
   const [activeTrain, setActiveTrain] = useState(0);
+  const [trainDirection, setTrainDirection] = useState<TrainTrip["direction"]>("right");
   const [lightsActive, setLightsActive] = useState(false);
   const [gatesActive, setGatesActive] = useState(false);
   const [animal, setAnimal] = useState<number | null>(null);
@@ -72,16 +75,16 @@ export default function Home() {
   const [audioStarted, setAudioStarted] = useState(false);
   const [animalsEnabled, setAnimalsEnabled] = useState(true);
   const [surprises, setSurprises] = useState<Partial<Record<SurpriseTarget, ActiveSurprise>>>({});
-  const [hotspots, setHotspots] = useState<Record<SurpriseTarget, Hotspot> | null>(null);
-  const [trackBounds, setTrackBounds] = useState<Hotspot | null>(null);
+  const [camera, setCamera] = useState<ReturnType<typeof sceneCamera> | null>(null);
   const [titleVisible, setTitleVisible] = useState(true);
   const [announcement, setAnnouncement] = useState("Henry's railroad is ready!");
   const audio = useRef<RailroadAudio | null>(null);
-  const trainBag = useRef<number[]>([]);
+  const trips = useRef(createTrainTrips());
   const surpriseBags = useRef<Record<SurpriseTarget, SurpriseKind[]>>({ tree: [], rock: [] });
   const surpriseBusy = useRef<Record<SurpriseTarget, boolean>>({ tree: false, rock: false });
   const animalsAllowed = useRef(true);
   const stage = useRef<HTMLElement | null>(null);
+  const settings = useRef<HTMLDialogElement | null>(null);
   const lastAnimal = useRef(-1);
   const gameStarted = useRef(false);
   const lightsBusy = useRef(false);
@@ -113,8 +116,7 @@ export default function Home() {
     if (!stage.current) return;
     const element = stage.current;
     const update = () => {
-      setHotspots(sceneHotspots(element.clientWidth, element.clientHeight));
-      setTrackBounds(trackHotspot(element.clientWidth, element.clientHeight));
+      setCamera(sceneCamera(element.clientWidth, element.clientHeight));
     };
     update();
     const observer = new ResizeObserver(update);
@@ -128,7 +130,8 @@ export default function Home() {
     surpriseBags.current = { tree: [], rock: [] };
     if (!enabled) {
       setAnimal(null);
-      setSurprises((current) => Object.fromEntries(Object.entries(current).filter(([, event]) => event.kind !== "squirrel" && event.kind !== "turtle")));
+      setBirds(null);
+      setSurprises((current) => Object.fromEntries(Object.entries(current).filter(([, event]) => !["squirrel", "turtle", "birds", "butterflies"].includes(event.kind))));
     }
   };
 
@@ -170,6 +173,7 @@ export default function Home() {
     };
     const showBirds = () => {
       if (!alive) return;
+      if (!animalsAllowed.current) { schedule(showBirds, nextDelay(12_000, 27_000)); return; }
       const next = Math.floor(Math.random() * 2);
       setBirds(next);
       audio.current?.playChirp();
@@ -185,11 +189,6 @@ export default function Home() {
     };
   }, [schedule]);
 
-  const pullTrain = useCallback(() => {
-    if (trainBag.current.length === 0) trainBag.current = shuffledBag(TRAIN_PROFILES.length);
-    return trainBag.current.pop() ?? 0;
-  }, []);
-
   const beginGame = useCallback(() => {
     if (gameStarted.current) return;
     gameStarted.current = true;
@@ -200,11 +199,13 @@ export default function Home() {
     if (trainBusy.current) return;
     beginGame();
     trainBusy.current = true;
-    const chosen = pullTrain();
+    const trip = trips.current();
+    const chosen = trip.train;
     const started = performance.now();
     setActiveTrain(chosen);
+    setTrainDirection(trip.direction);
     setTrainActive(true);
-    setAnnouncement(chosen === 1 ? HENRY_GREETING : `${TRAIN_PROFILES[chosen].name} is coming by!`);
+    setAnnouncement(trip.direction === "left" ? `${TRAIN_PROFILES[chosen].name} is coming back!` : chosen === 1 ? HENRY_GREETING : `${TRAIN_PROFILES[chosen].name} is coming by!`);
     schedule(() => {
       setTrainActive(false);
       setAnnouncement("The track is clear. What will come next?");
@@ -212,9 +213,9 @@ export default function Home() {
     }, TRAIN_RUN_MS);
     if (await ensureAudio()) {
       audio.current?.playButton();
-      audio.current?.playTrain(chosen, (performance.now() - started) / 1000);
+      audio.current?.playTrain(chosen, (performance.now() - started) / 1000, trip.direction);
     }
-  }, [beginGame, ensureAudio, pullTrain, schedule]);
+  }, [beginGame, ensureAudio, schedule]);
 
   const triggerLights = async () => {
     if (lightsBusy.current) return;
@@ -257,7 +258,7 @@ export default function Home() {
   };
 
   const triggerSurprise = useCallback((target: SurpriseTarget) => {
-    if (surpriseBusy.current[target] || !hotspots) return;
+    if (surpriseBusy.current[target]) return;
     beginGame();
     surpriseBusy.current[target] = true;
     const choices = availableSurprises(target, animalsAllowed.current);
@@ -265,7 +266,7 @@ export default function Home() {
       surpriseBags.current[target] = shuffledBag(choices.length).map((index) => choices[index]);
     }
     const kind = surpriseBags.current[target].pop()!;
-    const { x, y } = hotspots[target];
+    const { x, y } = SCENE_TARGETS[target];
     setSurprises((current) => ({ ...current, [target]: { kind, x, y } }));
     setAnnouncement(SURPRISE_LABELS[kind]);
     schedule(() => {
@@ -279,235 +280,136 @@ export default function Home() {
       else if (kind === "squirrel" || kind === "turtle") audio.current?.playAnimal(kind === "squirrel" ? 4 : 5);
       else audio.current?.playSurprise();
     });
-  }, [beginGame, ensureAudio, hotspots, schedule]);
+  }, [beginGame, ensureAudio, schedule]);
 
+  const hotspots = camera ? sceneHotspots(camera) : null;
+  const trainWidth = activeTrain === 1 && trainDirection === "left" ? 1300 : WORLD.trainWidth;
+  const travel = camera ? trainTravel(camera, trainDirection, trainWidth) : { from: -1000, to: WORLD.width };
   const trainStyle = {
-    "--train-column": activeTrain % 2,
-    "--train-row": Math.floor(activeTrain / 2),
+    top: WORLD.railY, width: trainWidth,
+    "--travel-from": `${travel.from}px`, "--travel-to": `${travel.to}px`,
+    "--run-time": `${TRAIN_RUN_MS}ms`,
   } as CSSProperties;
-  const trainDirection = TRAIN_PROFILES[activeTrain].direction;
 
   return (
-    <main className="railroad-app" style={{ "--world-image": `url("${assetUrl("/assets/railroad-world.webp")}")`, "--train-image": `url("${assetUrl("/assets/ten-trains-v2.webp")}")` } as CSSProperties}>
-      <section ref={stage} className="railroad-stage" aria-label="Henry's animated railroad crossing">
-        <div className="world-pan" aria-hidden="true" />
-        <div className="cloud cloud-one" aria-hidden="true">
-          <SceneSprite name="cloud-one" />
-        </div>
-        <div className="cloud cloud-two" aria-hidden="true">
-          <SceneSprite name="cloud-two" />
-        </div>
-
-        <header className="game-header">
-          <div className={`title-sign ${titleVisible ? "" : "is-hidden"}`}>
-            <span className="eyebrow">ALL ABOARD</span>
-            <h1>Henry the Train</h1>
-            <p>What will come by next?</p>
-          </div>
-          <div className="sound-controls" aria-label="Game navigation and sound controls">
-            <a className="game-center-shortcut" href="https://seansommer.github.io/gamecenter/" target="_top" aria-label="Return to Game Center" title="Game Center">
-              <img src={assetUrl("/game-center-icon.png")} width="36" height="36" alt="" />
-            </a>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon-lg"
-              className="round-control"
-              aria-label={soundEnabled ? "Turn off all sound" : "Turn on all sound"}
-              aria-pressed={soundEnabled}
-              onClick={() => setSoundEnabled((value) => !value)}
-            >
-              {soundEnabled ? <Volume2 /> : <VolumeX />}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon-lg"
-              className="round-control"
-              aria-label={musicEnabled ? "Turn off music" : "Turn on music"}
-              aria-pressed={musicEnabled}
-              onClick={() => setMusicEnabled((value) => !value)}
-            >
-              {musicEnabled ? <Music2 /> : <CircleStop />}
-            </Button>
-          </div>
-        </header>
-
-        {(["left", "right"] as const).map((side) => (
-          <div key={side} className={`crossing crossing-${side}`}>
-            <Button type="button" variant="ghost"
-              className={`crossing-signal crossing-touch ${lightsActive ? "is-flashing" : ""}`}
-              onClick={triggerLights} aria-label={`Flash the lights: ${side} crossing signal`}
-              aria-disabled={lightsActive} aria-busy={lightsActive}>
-              <SceneSprite name={`signal-${side}`} />
-            </Button>
-            <Button type="button" variant="ghost"
-              className={`crossing-gate crossing-touch gate-${side} ${gatesActive ? "is-running" : ""}`}
-              onClick={triggerGates} aria-label={`Lower the gates: ${side} crossing gate`}
-              aria-disabled={gatesActive} aria-busy={gatesActive}>
-              <span className="gate-beam"><SceneSprite name={`beam-${side}`} stretch /></span>
-              <span className="gate-hinge"><SceneSprite name={`hinge-${side}`} /></span>
-            </Button>
-          </div>
-        ))}
-
-        {trackBounds && (
-          <Button type="button" variant="ghost" className="scene-hotspot hotspot-track"
-            style={{ left: trackBounds.x, top: trackBounds.y, width: trackBounds.width, height: trackBounds.height }}
-            onClick={triggerTrain} aria-label="Send a train: tap the middle of the railroad track"
-            aria-disabled={trainActive} aria-busy={trainActive}>
-            <span className="sr-only">Send a train</span>
+    <main className="railroad-app">
+      <header className="game-header">
+        <a className="game-center-shortcut" href="https://seansommer.github.io/gamecenter/" target="_top" aria-label="Return to Game Center" title="Game Center">
+          <img src={assetUrl("/game-center-icon.png")} width="36" height="36" alt="" />
+        </a>
+        <h1>Henry the Train</h1>
+        <nav className="sound-controls" aria-label="Sound and parent settings">
+          <Button type="button" variant="secondary" size="icon-lg" className="round-control"
+            aria-label={soundEnabled ? "Turn off all sound" : "Turn on all sound"} aria-pressed={soundEnabled}
+            onClick={() => { setSoundEnabled(value => !value); void ensureAudio(); }}>
+            {soundEnabled ? <Volume2 /> : <VolumeX />}
           </Button>
-        )}
+          <Button type="button" variant="secondary" size="icon-lg" className="round-control"
+            aria-label={musicEnabled ? "Turn off music" : "Turn on music"} aria-pressed={musicEnabled}
+            onClick={() => { setMusicEnabled(value => !value); void ensureAudio(); }}>
+            {musicEnabled ? <Music2 /> : <CircleStop />}
+          </Button>
+          <Button type="button" variant="secondary" size="icon-lg" className="round-control"
+            aria-label="Open parent settings" aria-haspopup="dialog" aria-controls="parent-settings"
+            onClick={() => settings.current?.showModal()}><Settings2 /></Button>
+        </nav>
+      </header>
 
-        {hotspots && (["tree", "rock"] as const).map((target) => (
-          <SceneHotspot key={target} target={target} bounds={hotspots[target]} active={Boolean(surprises[target])} onExplore={triggerSurprise} />
-        ))}
-
-        {(Object.entries(surprises) as [SurpriseTarget, ActiveSurprise][]).map(([target, event]) => (
-          <div key={target} className={`surprise-event surprise-${event.kind}`} aria-hidden="true">
-            {(event.kind === "squirrel" || event.kind === "turtle") && animalsEnabled && (
-              <div className={`animal-friend secret-animal secret-${target}`}><SurpriseSprite name={event.kind} /></div>
-            )}
-            {event.kind === "birds" && <div className="bird-flock secret-birds"><SceneSprite name="blue-birds" /></div>}
-            {(event.kind === "leaves" || event.kind === "butterflies") && Array.from({ length: event.kind === "leaves" ? 9 : 4 }, (_, index) => (
-              <div key={index} className={`surprise-particle ${event.kind === "leaves" ? "breeze-leaf" : "secret-butterfly"}`}
-                style={{ left: event.x, top: event.y, "--i": index, "--drift": `${(index % 2 ? -1 : 1) * (90 + index * 24)}px`, "--lift": `${80 + index * 24}px` } as CSSProperties}>
-                <SurpriseSprite name={event.kind === "leaves" ? "leaf" : "butterfly"} />
+      <section ref={stage} className="railroad-stage" aria-label="Henry's animated railroad crossing">
+        {camera && <>
+          <div className="railroad-world" aria-hidden="true" style={{
+            width: WORLD.width, height: WORLD.height,
+            transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
+            backgroundImage: `url("${assetUrl("/assets/railroad-world-v3.webp")}")`,
+          }}>
+            {(["left", "right"] as const).map(side => (
+              <div key={side} className={`crossing-signal ${lightsActive ? "is-flashing" : ""}`}
+                style={{ left: SIGNALS[side].x, top: SIGNALS[side].y, width: SIGNALS[side].width, height: SIGNALS[side].height }}>
+                <SceneSprite name={`signal-${side}`} />
+                <i className="signal-lamp lamp-one" /><i className="signal-lamp lamp-two" />
               </div>
             ))}
-            {event.kind === "sparkles" && Array.from({ length: 10 }, (_, index) => (
-              <span key={index} className="rock-sparkle" style={{ left: event.x, top: event.y, "--i": index, "--drift": `${Math.cos(index * 0.7) * 110}px`, "--lift": `${45 + index * 11}px` } as CSSProperties}>✦</span>
+            {(["left", "right"] as const).map(side => (
+              <div key={side} className={`crossing-gate gate-${side} ${gatesActive ? "is-running" : ""}`}
+                style={{ left: GATES[side].x, top: GATES[side].y }}>
+                <img src={assetUrl(`/assets/crossing/gate-${side}.webp`)} alt="" draggable={false} />
+              </div>
+            ))}
+            {trainActive && <div className="train-runner" style={trainStyle}>
+              <img className={`train-sprite ${trainDirection === "left" && activeTrain !== 1 ? "face-left" : ""}`} src={assetUrl(`/assets/trains/${activeTrain}-${activeTrain === 1 ? trainDirection : "right"}.webp`)}
+                alt="" draggable={false} />
+            </div>}
+            {birds !== null && animalsEnabled && <div className={`bird-flock flock-${birds}`}><SceneSprite name={BIRD_SPRITES[birds]} /></div>}
+            {animalsEnabled && animal !== null && <div className={`animal-friend animal-${animal}`}><SceneSprite name={ANIMAL_SPRITES[animal]} /></div>}
+            {(Object.entries(surprises) as [SurpriseTarget, ActiveSurprise][]).map(([target, event]) => (
+              <div key={target} className={`surprise-event surprise-${event.kind}`}>
+                {(event.kind === "squirrel" || event.kind === "turtle") && animalsEnabled &&
+                  <div className={`animal-friend secret-animal secret-${target}`}><SurpriseSprite name={event.kind} /></div>}
+                {event.kind === "birds" && animalsEnabled && <div className="bird-flock secret-birds"><SceneSprite name="blue-birds" /></div>}
+                {(event.kind === "leaves" || event.kind === "butterflies" && animalsEnabled) && Array.from({ length: event.kind === "leaves" ? 7 : 4 }, (_, index) => (
+                  <div key={index} className={`surprise-particle ${event.kind === "leaves" ? "breeze-leaf" : "secret-butterfly"}`}
+                    style={{ left: event.x, top: event.y, "--i": index, "--drift": `${(index % 2 ? -1 : 1) * (90 + index * 24)}px`, "--lift": `${80 + index * 24}px` } as CSSProperties}>
+                    <SurpriseSprite name={event.kind === "leaves" ? "leaf" : "butterfly"} />
+                  </div>
+                ))}
+                {event.kind === "sparkles" && Array.from({ length: 8 }, (_, index) => (
+                  <span key={index} className="rock-sparkle" style={{ left: event.x, top: event.y, "--i": index, "--drift": `${Math.cos(index * 0.7) * 110}px`, "--lift": `${45 + index * 11}px` } as CSSProperties}>✦</span>
+                ))}
+              </div>
             ))}
           </div>
-        ))}
-
-        {birds !== null && (
-          <div className={`bird-flock flock-${birds}`} aria-label="Birds are flying overhead">
-            <SceneSprite name={BIRD_SPRITES[birds]} />
-            <span className="sr-only">Birds fly overhead</span>
-          </div>
-        )}
-
-        {animalsEnabled && animal !== null && (
-          <div className={`animal-friend animal-${animal}`} aria-live="polite">
-            <SceneSprite name={ANIMAL_SPRITES[animal]} />
-            <span className="sr-only">A friendly animal pops up and waves hello</span>
-          </div>
-        )}
-
-        {trainActive && (
-          <div
-            className={`train-runner direction-${trainDirection}`}
-            role="img"
-            aria-label={`${TRAIN_PROFILES[activeTrain].name} passing ${trainDirection}`}
-          >
-            <div className="train-sprite" style={trainStyle} />
-          </div>
-        )}
-
-        <div className="status-pill" aria-live="polite">
-          {announcement}
-        </div>
+          <SceneHotspot bounds={trackHotspot(camera)} active={trainActive} label="Send a train: tap the track" onActivate={triggerTrain} className="hotspot-track" />
+          {(["left", "right"] as const).map(side => <SceneHotspot key={`signal-${side}`}
+            bounds={signalHotspot(camera, side)} active={lightsActive} label={`Flash the lights: ${side} crossing signal`} onActivate={triggerLights} />)}
+          {(["left", "right"] as const).map(side => <SceneHotspot key={`gate-${side}`}
+            bounds={gateHotspot(camera, side)} active={gatesActive} label={`Lower the gates: ${side} crossing gate`} onActivate={triggerGates} />)}
+          {hotspots && (["tree", "rock"] as const).map(target => <SceneHotspot key={target}
+            bounds={hotspots[target]} active={Boolean(surprises[target])} label={`Explore the ${target}: discover a surprise`} onActivate={() => triggerSurprise(target)} />)}
+        </>}
+        <p className={`scene-tip ${titleVisible ? "" : "is-hidden"}`}>Tap the track, lights or gates. Try a tree or rock, too!</p>
+        <p className="status-pill" role="status">{announcement}</p>
       </section>
 
       <section className="control-deck" aria-label="Railroad controls">
-        <div className="control-intro">
-          <span className="control-kicker">HENRY&apos;S CONTROL PANEL</span>
-          <div className="panel-options">
-            <label className="animal-toggle" htmlFor="animals-toggle">
-              <Bird aria-hidden="true" />
-              <span>Animals {animalsEnabled ? "on" : "off"}</span>
-              <Switch id="animals-toggle" checked={animalsEnabled} onCheckedChange={toggleAnimals} aria-label="Show animal pop-ups" />
-            </label>
-          </div>
-          <span className="audio-ready">
-            {audioStarted ? "Sounds are ready" : "Your first tap starts the music"}
-          </span>
-          <div className="volume-mixer" aria-label="Volume controls">
-            <div className="volume-row">
-              <span>
-                <Music2 aria-hidden="true" />
-                Music
-                <strong>{musicVolume}%</strong>
-              </span>
-              <Slider
-                value={[musicVolume]}
-                min={0}
-                max={100}
-                step={1}
-                aria-label="Background music volume"
-                aria-valuetext={`${musicVolume} percent`}
-                onValueChange={(value) => setMusicVolume(value[0] ?? 0)}
-              />
-            </div>
-            <div className="volume-row">
-              <span>
-                <Volume2 aria-hidden="true" />
-                Sound effects
-                <strong>{effectsVolume}%</strong>
-              </span>
-              <Slider
-                value={[effectsVolume]}
-                min={0}
-                max={100}
-                step={1}
-                aria-label="Sound effects volume"
-                aria-valuetext={`${effectsVolume} percent`}
-                onValueChange={(value) => setEffectsVolume(value[0] ?? 0)}
-              />
-            </div>
-          </div>
-        </div>
-
         <div className="big-buttons">
-          <Button
-            type="button"
-            size="lg"
-            className="game-button train-button"
-            onClick={triggerTrain}
-            disabled={trainActive}
-            aria-busy={trainActive}
-          >
-            <TrainFront />
-            <span>{trainActive ? "Train Coming!" : "Send a Train"}</span>
-            <small>{trainActive ? TRAIN_PROFILES[activeTrain].name : "10 surprise trains"}</small>
+          <Button type="button" size="lg" className="game-button train-button" onClick={triggerTrain}
+            disabled={trainActive} aria-busy={trainActive} aria-label="Send a Train">
+            <TrainFront /><span>Train</span>
           </Button>
-          <Button
-            type="button"
-            size="lg"
-            className="game-button lights-button"
-            onClick={triggerLights}
-            disabled={lightsActive}
-            aria-busy={lightsActive}
-          >
-            <Siren />
-            <span>{lightsActive ? "Lights Flashing!" : "Flash the Lights"}</span>
-            <small>{lightsActive ? "Ding, ding, ding!" : "Crossing signal"}</small>
+          <Button type="button" size="lg" className="game-button lights-button" onClick={triggerLights}
+            disabled={lightsActive} aria-busy={lightsActive} aria-label="Flash the Lights">
+            <Siren /><span>Lights</span>
           </Button>
-          <Button
-            type="button"
-            size="lg"
-            className="game-button gates-button"
-            onClick={triggerGates}
-            disabled={gatesActive}
-            aria-busy={gatesActive}
-          >
-            <Play className="gate-icon" />
-            <span>{gatesActive ? "Gates Moving!" : "Lower the Gates"}</span>
-            <small>{gatesActive ? "Down, wait, and up" : "Same ride every time"}</small>
+          <Button type="button" size="lg" className="game-button gates-button" onClick={triggerGates}
+            disabled={gatesActive} aria-busy={gatesActive} aria-label="Lower the Gates">
+            <Play className="gate-icon" /><span>Gates</span>
           </Button>
         </div>
-
-        <div className="surprise-note">
-          <Bird aria-hidden="true" />
-          <span>Try touching a tree or a rock. There are secrets to discover!</span>
-        </div>
-        <a className="game-center-footer" href="https://seansommer.github.io/gamecenter/" target="_top">
-          <img src={assetUrl("/game-center-icon.png")} width="22" height="22" alt="" />
-          <span>Game Center</span>
+        <a className="game-center-footer" href="https://seansommer.github.io/gamecenter/" target="_top" aria-label="Return to Game Center">
+          <img src={assetUrl("/game-center-icon.png")} width="18" height="18" alt="" /><span>Game Center</span>
         </a>
       </section>
+
+      <dialog ref={settings} id="parent-settings" className="parent-settings" aria-labelledby="settings-title">
+        <div className="settings-heading"><h2 id="settings-title">Parent settings</h2>
+          <Button type="button" variant="ghost" size="icon-lg" className="close-settings" onClick={() => settings.current?.close()} aria-label="Close parent settings"><X /></Button>
+        </div>
+        <label className="animal-toggle" htmlFor="animals-toggle"><Bird aria-hidden="true" /><span>Animal visitors</span>
+          <Switch id="animals-toggle" checked={animalsEnabled} onCheckedChange={toggleAnimals} aria-label="Show animal visitors" />
+        </label>
+        <div className="volume-mixer" aria-label="Volume controls">
+          <div className="volume-row"><label id="music-volume-label"><Music2 aria-hidden="true" />Music<strong>{musicVolume}%</strong></label>
+            <Slider value={[musicVolume]} min={0} max={100} step={1} aria-label="Background music volume"
+              aria-valuetext={`${musicVolume} percent`} onValueChange={value => setMusicVolume(value[0] ?? 0)} />
+          </div>
+          <div className="volume-row"><label id="effects-volume-label"><Volume2 aria-hidden="true" />Sound effects<strong>{effectsVolume}%</strong></label>
+            <Slider value={[effectsVolume]} min={0} max={100} step={1} aria-label="Sound effects volume"
+              aria-valuetext={`${effectsVolume} percent`} onValueChange={value => setEffectsVolume(value[0] ?? 0)} />
+          </div>
+        </div>
+        <p className="settings-note">{audioStarted ? "Music and train sounds have separate volume controls." : "Tap a play button to start the sounds."}</p>
+        <Button type="button" size="lg" className="back-to-play" onClick={() => settings.current?.close()}>Back to play</Button>
+      </dialog>
     </main>
   );
 }

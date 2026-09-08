@@ -1,54 +1,17 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { loadTs } from "./load-ts.mjs";
-
-test("all trains have a full-length rumble and repeated two-wheel rail clacks", () => {
-  const { RailroadAudio } = loadTs("../lib/railroad-audio.ts");
-  for (let train = 0; train < 10; train++) {
-    const audio = new RailroadAudio();
-    const tones = [], noise = [];
-    audio.tone = (event) => tones.push(event);
-    audio.noise = (...event) => noise.push(event);
-    audio.playTrain(train);
-    assert.ok(noise.some(([at, duration]) => at === 0 && duration === 9));
-    assert.ok(noise.filter(([, duration]) => duration < 0.1).length >= 40);
-    assert.ok(noise.every(([at, duration]) => at + duration <= 9.01));
-    assert.ok(tones.length > 20);
-  }
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { loadTs } from './load-ts.mjs';
+const {renderTrainSound}=loadTs('../lib/train-sound.ts');
+function rms(a,start,end){let total=0;for(let i=start;i<end;i++)total+=a[i]*a[i];return Math.sqrt(total/(end-start));}
+test('ten original sounds fill the run, have finite samples and stay below clipping',()=>{
+ const signatures=new Set();
+ for(let train=0;train<10;train++){const samples=renderTrainSound(train);assert.equal(samples.length,22050*9);let peak=0;for(const n of samples){assert.ok(Number.isFinite(n));peak=Math.max(peak,Math.abs(n));}assert.ok(peak>.05&&peak<.71);signatures.add(Array.from(samples.slice(25000,25020)).join(','));}
+ assert.equal(signatures.size,10);
 });
-
-test("late audio start catches up and never begins a stale passing sequence", () => {
-  const { RailroadAudio } = loadTs("../lib/railroad-audio.ts");
-  const audio = new RailroadAudio();
-  const events = [];
-  audio.tone = () => {};
-  audio.noise = (...event) => events.push(event);
-  audio.playTrain(1, 3);
-  assert.ok(events.every(([at, duration]) => at + duration <= 6.01));
-  const count = events.length;
-  audio.playTrain(1, 10);
-  assert.equal(events.length, count);
+test('passing trains fade in and away instead of starting or ending abruptly',()=>{
+ const a=renderTrainSound(1);assert.equal(a[0],0);assert.ok(Math.abs(a.at(-1))<.0001);const middle=rms(a,22050*4,22050*5);assert.ok(rms(a,0,2205)<middle*.3);assert.ok(rms(a,a.length-2205,a.length)<middle*.3);
 });
-
-test("train actions and volume controls never request browser speech", () => {
-  const forbidden = () => { throw new Error("Browser speech must never be used"); };
-  const { RailroadAudio } = loadTs("../lib/railroad-audio.ts", {
-    SpeechSynthesisUtterance: forbidden,
-    speechSynthesis: new Proxy({}, { get: forbidden }),
-  });
-  const audio = new RailroadAudio();
-  audio.tone = () => {};
-  audio.noise = () => {};
-  for (let train = 0; train < 10; train++) audio.playTrain(train);
-  audio.setEnabled(false);
-  audio.setEffectsVolume(0);
-  audio.setEnabled(true);
-  audio.setEffectsVolume(0.4);
-  audio.destroy();
-  assert.equal(audio.speakTrain, undefined);
-});
-
-test("missing browser audio support is a harmless silent fallback", async () => {
-  const { RailroadAudio } = loadTs("../lib/railroad-audio.ts");
-  assert.equal(await new RailroadAudio().start(), false);
+test('invalid sound requests cannot allocate uncontrolled audio buffers',()=>{assert.throws(()=>renderTrainSound(99));assert.throws(()=>renderTrainSound(0,Infinity));assert.throws(()=>renderTrainSound(0,1000000));});
+test('missing audio support is a silent fallback and stale trains never create audio',async()=>{
+ const {RailroadAudio}=loadTs('../lib/railroad-audio.ts');const audio=new RailroadAudio();assert.equal(await audio.start(),false);assert.doesNotThrow(()=>audio.playTrain(1,10,'left'));audio.destroy();
 });

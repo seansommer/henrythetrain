@@ -1,0 +1,372 @@
+{
+  "generator": "Built-in image_gen",
+  "notes": "Fresh alpha sprites. Crop/export preserves generated alpha. Left Henry is independently rendered; unlettered trains reuse mirrored art.",
+  "scene": {
+    "task": "Henry the Train scenic backdrop, crossing parts, and wildlife atlas",
+    "date": "2026-09-07",
+    "generator": "built-in tools.image_gen__imagegen",
+    "selected": {
+      "backdrop": {
+        "file": "railroad-world-revamp.png",
+        "source": "exec-c93752c8-566a-4a19-bc4c-b7bf60cdc505.png",
+        "input": "exec-0355984e-29ec-4200-8f11-9eaa28a2cffb.png",
+        "prompt": "Use case: precise-object-edit. This is a production game backdrop. Make ONLY these two placement corrections to the supplied landscape image. Preserve the 3:2 image, beautiful blue sky and clouds, distant green hills, central tan walking path and exactly one horizontal railway with all existing rail geometry and height unchanged.\n1. The leafy tree left of the path is too large and its canopy is too high. Reduce it to a small tree and keep the trunk rooted at the same position. In the supplied 1536x1024 coordinate system, place the whole tree inside x=490..665, y=425..585. Leaf canopy center approximately x=575,y=505, trunk foot x=575,y=585. Retain a full leafy rounded canopy and visible trunk. Fill its former upper silhouette seamlessly with the existing hills and blue sky. The tree should look like a distinct small tree, still in exactly the same polished sunny children's storybook style.\n2. Move the single foreground gray rock about 75 pixels LEFT while preserving its size, so its center is x=940,y=740. Keep it wholly on the grassy right side of the central walking path. Reconstruct the old rock location as meadow.\nNo other changes. Keep the front railway steel rail dead level at y=640, and maintain exactly TWO rails that together form ONE track. No additional props, animals, trains, people, gates, signals, text or UI."
+      },
+      "initial_backdrop": {
+        "file": "railroad-world-initial.png",
+        "source": "exec-0355984e-29ec-4200-8f11-9eaa28a2cffb.png",
+        "prompt": "Use case: illustration-story.\nAsset type: production background for a toddler railroad toy game.\nCreate a NEW polished scenic countryside illustration, landscape 3:2, desired resolution 3072 x 2048. Sunny vivid blue sky, soft puffy white clouds, gently rounded green meadows and distant curved hills. Rich, friendly storybook rendering with soft painterly texture and crisp readable silhouettes, similar to a high quality children's animated countryside. No text.\nCOMPOSITION IS CRITICAL: The scene is a straight side view of ONE horizontal railway track spanning edge to edge. One railway track means EXACTLY TWO parallel steel rails sharing a single narrow row of brown wooden sleepers, not two separate tracks. Both rails are dead straight and perfectly level. Front steel rail is centered at pixel y=1280 (62.5% down); the entire single track and sleeper bed is only about 100 pixels high, with the rear rail above the front rail. No slope, bend, diagonal, vanishing point, curve, or perspective skew in the railway.\nA pale tan walking path crosses this single track at the exact horizontal center x=1536, then gently winds into the distant hills. Keep the crossing clear and uncomplicated.\nThe central crop-safe action area is x=1100 to 1950, y=900 to 1550. Place ONE leafy rounded tree just left of the central path: canopy centered near x=1150,y=1010, trunk ends near y=1170 behind the rails. Make it a distinct attractive small tree so it can be tapped. Place ONE rounded smooth gray rock in the foreground to the right of the central path, centered near x=1880,y=1480; readable stone silhouette with a little grass at its base. Do not make these two features gigantic. They must remain within the central camera area.\nLarge calm expanses of sky above and meadow below must survive a tall mobile-phone center crop. Gentle background hills may span the width, but all important objects remain central. Moderately detailed lush grass and a few tiny wildflowers. Warm sun, cheerful serene mood.\nDo not include trains, crossing signals, gate arms, people, animals, buildings, vehicles, signage, letters, logos, watermark, borders, UI, or additional rail tracks. Do not use dramatic landscape perspective."
+      },
+      "crossing": {
+        "file": "crossing-parts-revamp.png",
+        "source": "exec-dbea4d4c-97e5-4942-838a-708ef68b99f0.png",
+        "prompt": "Use case: stylized-concept.\nAsset type: game sprite parts atlas on a TRUE transparent PNG background with real alpha, desired canvas 2048 x 1536.\nCreate exactly FOUR isolated toy railroad crossing parts arranged in a generous invisible 2-column, 2-row layout. No visible cell lines. Top row contains two upright crossing signals. Bottom row contains two horizontal gate arms. Preserve generous transparent gutters and canvas margins; no object touches another or any canvas edge.\nTop-left: a silver-gray freestanding crossing pole and sturdy small metal base, red-and-white striped crossbuck X at its top, and TWO round side-by-side dark burgundy-red UNLIT lamps in black circular housings. The lamps are OFF: uniformly dark lenses, no orange core, glow, shine star, light beams, or red halo. Front view, symmetrical, entire signal including base visible.\nTop-right: a matching red-and-white signal, same design and size, again TWO round dark burgundy-red UNLIT lamps, complete pole/base, front view. Both signals are red and white, no yellow-black signal.\nBottom-left: ONE straight long red-and-white striped railroad gate arm extending horizontally RIGHT from a circular gray mechanical hinge at its LEFT end. Gate arm is level and about seven times as long as its maximum height INCLUDING the hinge. No pole attached. No lamps on the arm. Hinge is visibly round and centered vertically.\nBottom-right: ONE matching straight long red-and-white striped arm extending horizontally LEFT from a circular gray hinge at its RIGHT end. Same length and thickness. No pole or attached signal. No lamps on the arm.\nStyle: polished colorful children's toy illustration with simple 3D rounded forms, softly shaded metal and crisp edges. Friendly and readable at small game sizes, harmonious with a vivid storybook green countryside.\nVery important transparency constraints: actual alpha-transparent background; every space around objects and inside open areas is fully transparent. NO white/gray outline, matte, white fringe, sticker border, gray bars, checkerboard, painted grid, cast shadow, ground shadow, floor, background rectangle, ground or scenery. NO animals, text, letters, numbers, railway rails, vehicles, logos, watermark. Only four separated objects."
+      },
+      "wildlife": {
+        "file": "wildlife-atlas-revamp.png",
+        "source": "exec-deb22e01-a6d3-46df-921e-b683b0aa8818.png",
+        "prompt": "Use case: illustration-story.\nAsset type: production woodland game-sprite atlas, TRUE alpha-transparent PNG, desired portrait canvas 2048 x 3072.\nCreate EXACTLY TEN separate isolated friendly woodland illustrations, aligned in an invisible grid of TWO COLUMNS by FIVE ROWS. Every cell has the same width and height; each creature or item is centered within its own cell with generous transparent gutters. The exact reading order is mandatory:\nROW 1: LEFT a friendly orange-brown baby DEER with small antlers, smiling and waving one front hoof; RIGHT a friendly soft gray RABBIT with long ears, smiling and waving one paw.\nROW 2: LEFT a friendly gray RACCOON with black eye mask and striped tail, smiling and waving; RIGHT a friendly warm brown BEAR cub smiling and waving one paw.\nROW 3: LEFT ONE small BLUE BIRD flying with spread wings, blue upper plumage and warm yellow belly; RIGHT ONE small BROWN BIRD flying with spread wings and cream belly.\nROW 4: LEFT a friendly orange-red SQUIRREL with fluffy curled tail, smiling and waving one paw; RIGHT a friendly little green TURTLE with a rounded patterned green shell, full body visible, facing slightly toward the viewer.\nROW 5: LEFT ONE orange autumn LEAF with stem; RIGHT ONE golden-yellow BUTTERFLY with open wings.\nUse the same polished warm children's storybook toy style for all ten: expressive large kind eyes, cheerful faces, soft plush-like fur on mammals, detailed but clean feathers, rounded shapes, gentle warm illumination, vivid pleasing colors. Mammals may be charming upright full-body toys; show their complete silhouettes including limbs and tails. No bottom cutoff. Birds and tiny objects are independently centered. Keep all objects comfortably contained in their cells, leaving at least 8% of each cell as fully transparent padding on every edge.\nBackground must be real alpha transparency, not black, white, gray, or a painted checkerboard. Clean alpha silhouettes including fur and feathers. NO white or gray halos, sticker outlines, fringe, rectangles, bars, grids, cell dividers, drop shadows, ground shadows, floor, ground, grass, rocks, branches, clouds, text, letters, numbers, labels, logos, or watermark. No overlapping cells, no stray speckles or extra animals. Exactly one subject per cell in the stated order."
+      }
+    },
+    "rejected_edits": {
+      "crossing": {
+        "source": "exec-67e1dbd9-0ee8-4367-b3be-7b5e576b7f9c.png",
+        "reason": "Reference edit changed the image to RGB with baked checkerboard; not production usable.",
+        "prompt": "Use case: precise-object-edit. Edit the supplied crossing-parts PNG atlas. Keep the two top red-white crossing signals exactly unchanged: complete pole and base, paired dark red UNLIT lamps, front view and separated positions.\nChange ONLY the proportions of the two lower gate arms. They must remain horizontal mirror counterparts: LEFT arm hinges at its LEFT end and points RIGHT; RIGHT arm hinges at its RIGHT end and points LEFT. Each complete gate, including the circular gray hinge, must be seven times as wide as it is tall (7:1). Keep their current overall widths, make each circular hinge about 2/3 of its current diameter, and make the striped beam a little thinner to match. All four objects must have generous fully transparent padding. These two gates have no lamps or glow.\nMaintain genuinely alpha-transparent PNG background. Preserve exact object silhouettes with crisp clean edges, no white/gray matte fringe, outlines, blocks, background, ground, shadows, visible grid, labels or extra parts. Four objects only. The paired lamps must remain dark burgundy and OFF."
+      },
+      "wildlife": {
+        "source": "exec-aa816876-730b-45d6-a434-27a67efaa86e.png",
+        "reason": "Reference edit changed the image to RGB with baked checkerboard; not production usable.",
+        "prompt": "Use case: precise-object-edit. Correct the LAYOUT ONLY of this wildlife sprite atlas while preserving all ten charming illustrated subjects and their style.\nThe required layout is an EXACT invisible grid of 2 equal columns and 5 equal rows on a 2:3 portrait transparent PNG. Each object must be wholly inside its cell with generous genuinely alpha-transparent gutter on all four sides. Shrink each subject by roughly 25% from its present size and place its center at the geometric center of its cell. No object may cross a row or column boundary.\nFor a 1024x1536 canvas use cell centers: x=256 and768; row centers y=154,461,768,1075,1382. Keep every object's visible pixels at least24px from top/bottom cell boundaries and50px from left/right boundaries. Exact order:\nrow1 deer waving / rabbit waving;\nrow2 raccoon waving / bear waving;\nrow3 one blue bird flying / one brown bird flying;\nrow4 squirrel waving / turtle;\nrow5 orange leaf / yellow butterfly.\nMaintain complete silhouettes, fur/feathers, antlers, feet, tails and wings without clipping. Keep warm expressive faces and waving poses. Keep single animals or items with no added elements.\nOutput must have real, clean alpha transparency outside every subject, no colored haze, white/gray matte or edge fringe, painted background, shadows, ground, floor, grid, labels or extra speckles. Do not draw a checkerboard. Only the ten isolated objects in the exact grid."
+      }
+    },
+    "notes": [
+      "No app source or Site checkout edits. No handmade background removal, threshold alpha alteration, resampling or imagegen CLI used.",
+      "Backdrop generation returned native 1536x1024 despite prompt requesting 3072x2048. Selected correction preserves native size.",
+      "Selected background is opaque RGB. It has exactly one horizontal track with two rails; front steel rail is approximately y=641 (62.6%). Tree trunk foot around x=559,y=582; tree canopy around x=556,y=486; rock center around x=964,y=735. Coordinates are approximate visual anchors in actual 1536x1024 image.",
+      "Crossing atlas has actual alpha, four separated complete parts, matching red-white signs, dark unlit red lamps, no arm lamps. Hinge-inclusive arm ratio is about5:1 rather than requested7:1. Main striped beam ratio is roughly10:1. Use actual measured crop bounds from image-qa.json.",
+      "Wildlife atlas has ten correct subjects in requested reading order. Row spacing is uneven and tight in places; use actual component bounds, not five equal row crops. Deer antlers begin8px below top edge and squirrel ears are only2px below previous bird component, so avoid broad blanket padding.",
+      "RGBA atlases contain low-alpha edge pixels and a few extremely faint pixels beyond visible parts, so raw alpha getbbox is wider than the visible-object bounds. image-qa.json component boxes use alpha>32 for measurement only. Original pixel data is unmodified.",
+      "Wildlife RGB channels retain colored background where alpha is zero. The alpha masks show isolated silhouettes and gutters, with no opaque colored backdrop. Correct alpha-aware rendering is required."
+    ]
+  },
+  "henryReturn": {
+    "asset": "/workspace/scratch/17535f30c53d/henry-revamp-art/return/henry-left.png",
+    "source": "/workspace/scratch/17535f30c53d/generated_images/exec-8cc4f7d5-1b22-4c6b-8262-ef7f12b367fc.png",
+    "generation_tool": "built-in image_gen.imagegen",
+    "mode": "new generation, descriptive prompt only; no reference image parameters",
+    "reference_inspected": "/workspace/scratch/17535f30c53d/generated_images/exec-8377758e-94e3-4209-8862-c42270ecced2.png (top-right Henry sprite; visual inspection only)",
+    "prompt_file": "/workspace/scratch/17535f30c53d/henry-revamp-art/return/henry-left.prompt.txt",
+    "prompt": "Asset type: standalone train sprite on a TRUE transparent PNG background with real alpha.\nUse case: stylized-concept.\nPrimary request: Generate ONE NEW standalone complete toy steam train facing LEFT, in bright polished illustrated toy art. The entire train is one level orthographic side-view sprite. In exact left-to-right order: a blue steam locomotive at the LEFT with its nose pointing LEFT, a blue coal tender in the CENTER, and a blue passenger coach at the RIGHT. All three vehicles are coupled together.\nLocomotive design: glossy royal/cobalt blue boiler and square blue cab; dark charcoal front smokebox at the far left; tall flared black smokestack above the left front; small polished brass/gold fittings and three polished gold steam domes along the boiler top; clear gold trim and gold boiler bands; blue left-pointing slatted cowcatcher at the far left; three large blue driving wheels with polished gold rims, gold hubs, and gold connecting rods; black chassis and small front wheel. The blue cab at the right rear of the locomotive has two dark windows with thin gold frames and a gently rounded blue roof.\nText (verbatim): \"HENRY\". On the large visible blue side of the locomotive boiler, place large clear polished gold uppercase serif letters reading HENRY, spelled H-E-N-R-Y. Letters must be upright, normal readable left-to-right, crisp and unmirrored. Create a new left-facing rendering; do not mirror or flip any text.\nTender design: short boxy royal-blue coal tender immediately behind the locomotive, filled with rounded black coal, thin double gold outlines around its blue side panel, two small black wheels with gold centers.\nPassenger coach design: royal-blue rectangular passenger coach at the far right, six warm glowing yellow rectangular windows with gold frames in an even row, delicate gold trim, a dark charcoal rounded roof with small gold roof vents, black undercarriage, and four small black wheels with subtle brass centers.\nStyle/medium: highly polished charming illustrated toy art, rich saturated blue enamel, glossy black details, bright brass gold edges, softly modeled highlights, crisp clean illustrated outlines. Consistent construction with a classic ornate blue-and-gold toy steam train. Perfectly horizontal and level, true orthographic side view, no perspective skew. Single train only, no extra vehicles or duplicated views.\nComposition/framing: wide horizontal composition centered within the canvas. Whole locomotive, tender, passenger coach, couplings, cowcatcher and every wheel fully visible, never cropped. Complete silhouette with generous completely empty transparent margins on all four sides.\nBackground/alpha: actual alpha-transparent PNG background. Every open space around and between wheels, inside any open gaps in the silhouette, between vehicles and outside the train must be genuinely transparent with real alpha, not represented by a color. Preserve real transparent alpha throughout the background.\nAvoid: NO checkerboard pattern of any kind, NO white matte, NO gray matte, NO black matte, NO painted background, NO floor, NO shadows, NO rails or track, NO landscape, NO smoke, NO glow outside the silhouette, NO watermark, NO extra text. Actual transparent background only.",
+    "generation_calls": 1,
+    "postprocessing": "None; copied byte-for-byte from generated PNG",
+    "format": "PNG",
+    "color_mode": "RGBA",
+    "dimensions": [
+      2172,
+      724
+    ],
+    "alpha": {
+      "min": 0,
+      "max": 255,
+      "fully_transparent_pixels": 882284,
+      "fully_opaque_pixels": 622,
+      "partially_transparent_pixels": 689622,
+      "fully_transparent_fraction": 0.5610609159264572,
+      "pixels_alpha_250_to_255": 633845,
+      "pixels_alpha_1_to_20": 24440,
+      "nonzero_bbox": [
+        19,
+        23,
+        2155,
+        694
+      ],
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "visual_review": "Complete blue-and-gold train faces left with locomotive, coal tender and coach; normal upright HENRY text is clearly readable. No checkerboard or matte seen. Exact wheel count and generous horizontal margins differ somewhat from prompting.",
+    "sha256": "f274f12a198fc7ab2b13c6c2a7aeb3fb980d5bb5a40a9442d9649035cd605b16"
+  },
+  "trainBrief": "Fresh generation without reference input: ten bright side-view toy trains, each facing right, with the blue locomotive labeled HENRY. True transparent PNG, no drawn background or checkerboard. Two columns and five rows in existing profile order.",
+  "exported": [
+    {
+      "path": "public/assets/trains/0-right.webp",
+      "width": 601,
+      "height": 174,
+      "crop": [
+        14,
+        117,
+        601,
+        174
+      ]
+    },
+    {
+      "path": "public/assets/trains/1-right.webp",
+      "width": 602,
+      "height": 174,
+      "crop": [
+        642,
+        117,
+        602,
+        174
+      ]
+    },
+    {
+      "path": "public/assets/trains/2-right.webp",
+      "width": 595,
+      "height": 194,
+      "crop": [
+        16,
+        330,
+        595,
+        194
+      ]
+    },
+    {
+      "path": "public/assets/trains/3-right.webp",
+      "width": 592,
+      "height": 158,
+      "crop": [
+        646,
+        365,
+        592,
+        158
+      ]
+    },
+    {
+      "path": "public/assets/trains/4-right.webp",
+      "width": 598,
+      "height": 108,
+      "crop": [
+        16,
+        631,
+        598,
+        108
+      ]
+    },
+    {
+      "path": "public/assets/trains/5-right.webp",
+      "width": 602,
+      "height": 122,
+      "crop": [
+        636,
+        614,
+        602,
+        122
+      ]
+    },
+    {
+      "path": "public/assets/trains/6-right.webp",
+      "width": 598,
+      "height": 181,
+      "crop": [
+        17,
+        812,
+        598,
+        181
+      ]
+    },
+    {
+      "path": "public/assets/trains/7-right.webp",
+      "width": 602,
+      "height": 180,
+      "crop": [
+        641,
+        812,
+        602,
+        180
+      ]
+    },
+    {
+      "path": "public/assets/trains/8-right.webp",
+      "width": 595,
+      "height": 129,
+      "crop": [
+        18,
+        1087,
+        595,
+        129
+      ]
+    },
+    {
+      "path": "public/assets/trains/9-right.webp",
+      "width": 610,
+      "height": 187,
+      "crop": [
+        636,
+        1030,
+        610,
+        187
+      ]
+    },
+    {
+      "path": "public/assets/trains/1-left.webp",
+      "width": 2129,
+      "height": 474,
+      "crop": [
+        23,
+        109,
+        2129,
+        474
+      ]
+    },
+    {
+      "path": "public/assets/crossing/signal-left.webp",
+      "width": 293,
+      "height": 610,
+      "crop": [
+        220,
+        74,
+        293,
+        610
+      ]
+    },
+    {
+      "path": "public/assets/crossing/signal-right.webp",
+      "width": 293,
+      "height": 610,
+      "crop": [
+        931,
+        74,
+        293,
+        610
+      ]
+    },
+    {
+      "path": "public/assets/crossing/gate-left.webp",
+      "width": 600,
+      "height": 126,
+      "crop": [
+        83,
+        805,
+        600,
+        126
+      ]
+    },
+    {
+      "path": "public/assets/crossing/gate-right.webp",
+      "width": 598,
+      "height": 126,
+      "crop": [
+        767,
+        806,
+        598,
+        126
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/deer.webp",
+      "width": 196,
+      "height": 309,
+      "crop": [
+        190,
+        4,
+        196,
+        309
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/rabbit.webp",
+      "width": 198,
+      "height": 302,
+      "crop": [
+        670,
+        11,
+        198,
+        302
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/raccoon.webp",
+      "width": 261,
+      "height": 307,
+      "crop": [
+        141,
+        321,
+        261,
+        307
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/bear.webp",
+      "width": 250,
+      "height": 313,
+      "crop": [
+        643,
+        318,
+        250,
+        313
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/blue-birds.webp",
+      "width": 330,
+      "height": 266,
+      "crop": [
+        111,
+        630,
+        330,
+        266
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/brown-birds.webp",
+      "width": 341,
+      "height": 256,
+      "crop": [
+        597,
+        638,
+        341,
+        256
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/squirrel.webp",
+      "width": 299,
+      "height": 309,
+      "crop": [
+        97,
+        897,
+        299,
+        309
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/turtle.webp",
+      "width": 308,
+      "height": 252,
+      "crop": [
+        592,
+        946,
+        308,
+        252
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/leaf.webp",
+      "width": 276,
+      "height": 279,
+      "crop": [
+        137,
+        1219,
+        276,
+        279
+      ]
+    },
+    {
+      "path": "public/assets/wildlife-v3/butterfly.webp",
+      "width": 328,
+      "height": 258,
+      "crop": [
+        584,
+        1230,
+        328,
+        258
+      ]
+    }
+  ]
+}

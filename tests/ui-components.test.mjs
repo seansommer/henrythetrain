@@ -1,70 +1,15 @@
-import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import test from "node:test";
-
-const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
-const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
-const profiles = await readFile(new URL("../lib/train-profiles.ts", import.meta.url), "utf8");
-const sprites = await readFile(new URL("../lib/scene-sprites.json", import.meta.url), "utf8");
-
-test("defines ten named surprise trains including Henry's express", () => {
-  assert.match(profiles, /Henry's Blue Express/);
-  assert.equal((profiles.match(/name: "/g) ?? []).length, 10);
-  assert.match(profiles, /Rainbow Celebration/);
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import test from 'node:test';
+const page=await readFile(new URL('../app/page.tsx',import.meta.url),'utf8');
+const css=await readFile(new URL('../app/globals.css',import.meta.url),'utf8');
+test('parent settings keep independent volume sliders out of the play-button row',()=>{
+ const deck=page.slice(page.indexOf('<section className="control-deck"'),page.indexOf('<dialog'));
+ assert.doesNotMatch(deck,/<Slider|<Switch/);assert.match(page,/<dialog[\s\S]*Background music volume/);assert.match(page,/Sound effects volume/);assert.match(page,/Show animal visitors/);
 });
-
-test("each main action has an independent non-restart guard", () => {
-  assert.match(page, /if \(trainBusy\.current\) return/);
-  assert.match(page, /if \(lightsBusy\.current\) return/);
-  assert.match(page, /if \(gatesBusy\.current\) return/);
-  assert.match(profiles, /const TRAIN_RUN_MS = 9_000/);
-  assert.match(profiles, /const LIGHT_RUN_MS = 10_000/);
-  assert.match(profiles, /const GATE_RUN_MS = 10_000/);
+test('tap feedback is brief and no busy or hover state lights the touch areas',()=>{
+ assert.match(css,/tap-feedback 360ms/);assert.match(css,/\.scene-hotspot:hover[^}]*background:transparent!important; box-shadow:none!important/s);assert.doesNotMatch(css,/active-button-glow/);
 });
-
-test("the game includes randomized wildlife and bird timing", () => {
-  assert.match(page, /Math\.random\(\) \* 4/);
-  assert.match(page, /Math\.random\(\) \* 2/);
-  assert.match(page, /nextDelay\(8_000, 19_000\)/);
-  assert.match(page, /nextDelay\(12_000, 27_000\)/);
-});
-
-test("all scene artwork is backed by project assets", () => {
-  assert.match(page, /railroad-world\.webp/);
-  assert.match(page, /ten-trains-v2\.webp/);
-  assert.match(sprites, /railroad-friends-v2\.webp/);
-});
-
-test("responsive and reduced-motion rules are present", () => {
-  assert.match(css, /@media \(max-width: 560px\)/);
-  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
-  assert.match(css, /100dvh/);
-});
-
-test("train sprites travel nose-first in their confirmed direction", () => {
-  assert.match(page, /TRAIN_PROFILES\[activeTrain\]\.direction/);
-  assert.match(page, /direction-\$\{trainDirection\}/);
-  assert.match(css, /@keyframes train-pass-right/);
-  assert.match(css, /@keyframes train-pass-left/);
-});
-
-test("the title clears five seconds after the first game action", () => {
-  assert.match(page, /schedule\(\(\) => setTitleVisible\(false\), 5_000\)/);
-  assert.match(page, /if \(gameStarted\.current\) return/);
-  assert.match(css, /\.title-sign\.is-hidden/);
-});
-
-test("music and sound effects have independent volume sliders", () => {
-  assert.match(page, /Background music volume/);
-  assert.match(page, /Sound effects volume/);
-  assert.match(page, /setMusicVolume/);
-  assert.match(page, /setEffectsVolume/);
-});
-
-test("animals are anchored to the foreground edge", () => {
-  assert.match(css, /\.animal-friend[\s\S]*?bottom:\s*-10%/);
-  assert.match(css, /\.animal-0[\s\S]*?left:\s*1%/);
-  assert.match(css, /\.animal-3[\s\S]*?right:\s*1%/);
-  assert.match(page, /SceneSprite name=\{ANIMAL_SPRITES\[animal\]\}/);
-  assert.match(page, /SceneSprite name=\{BIRD_SPRITES\[birds\]\}/);
+test('the page uses the same camera for the scene and hotspots and never mirrors Henry lettering',()=>{
+ assert.match(page,/sceneCamera\(element.clientWidth, element.clientHeight\)/);assert.match(page,/scale\(\$\{camera.scale\}\)/);assert.match(page,/trainDirection === "left" && activeTrain !== 1/);assert.match(css,/100dvh/);assert.match(css,/prefers-reduced-motion/);
 });

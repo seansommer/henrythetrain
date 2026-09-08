@@ -6,9 +6,9 @@ const base = `/${repo}`;
 const html = await readFile(new URL("../out/index.html", import.meta.url), "utf8");
 assert.match(html, /Henry the Train/);
 assert.match(html, /Send a Train/);
-assert.match(html, /Show animal pop-ups/);
+assert.match(html, /Show animal visitors/);
 assert.ok(html.includes(`${base}/_next/`), "JavaScript must use the repository subpath");
-for (const name of ["railroad-world.webp", "ten-trains-v2.webp", "railroad-friends-v2.webp", "henry-surprise-atlas-v1.png"]) {
+for (const name of ["railroad-world-v3.webp", "trains/1-right.webp", "trains/1-left.webp", "crossing/gate-left.webp", "crossing/gate-right.webp"]) {
   await access(new URL(`../out/assets/${name}`, import.meta.url));
 }
 for (const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)) {
@@ -23,7 +23,7 @@ for (const label of ["Background music volume", "Sound effects volume"]) {
   assert.ok(html.includes(`role="slider" aria-label="${label}"`), "Slider handle needs its own accessible label");
 }
 for (const name of ["deer", "rabbit", "raccoon", "bear", "blue-birds", "brown-birds", "squirrel", "turtle", "leaf", "butterfly"]) {
-  await access(new URL(`../out/assets/wildlife/${name}.png`, import.meta.url));
+  await access(new URL(`../out/assets/wildlife-v3/${name}.webp`, import.meta.url));
 }
 const origin = `https://seansommer.github.io${base}/`;
 assert.ok(html.includes(`property="og:image" content="${origin}og.png"`));

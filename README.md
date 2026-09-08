@@ -8,33 +8,32 @@ flash the warning lights, or lower and raise the crossing gates.
 
 ## What is included
 
-- Ten distinct train surprises, shuffled so every train appears before a repeat
+- Ten distinct train surprises: each goes out, then returns on the next tap before the next train is selected
 - A blue passenger train with **HENRY** on its engine
 - Fixed, non-restartable light and gate sequences
 - Controls that can all run at the same time
-- Slowly moving clouds
 - Random bird flyovers
 - Four random animal friends that pop up and wave
-- Longer, precisely clipped gates with fixed-size hinges anchored to each signal
+- Transparent crossing equipment with fixed pivots in the same scene coordinates as the rails
 - An **Animals on/off** switch, including the hidden foreground animal visits
 - Tree surprises: flying leaves, a waving squirrel, or a bird fly-by
 - Rock surprises: a waving turtle, butterflies, or a sparkle fountain
 - Each hiding place cycles through all three outcomes in shuffled order
 - Smaller control buttons and a shorter panel for more scenery
-- Original procedural music and sound effects made with the Web Audio API
+- Original procedural music and locally created train recordings played through the Web Audio API
 - Ten signature train sounds with continuous rail rattle and wheel clacks
 - Train whistles and signature effects only — no browser voice or spoken audio
 - Tap either illustrated signal, either moving gate, or the center rails
 - Bright volume tracks with large handles and a properly aligned animal switch
-- Edge-to-edge landscape framing with safe-area spacing for controls
+- One uniform scene camera for portrait, landscape and desktop; scenery and wheels cannot scale independently
 - Custom link-sharing artwork, a favicon, and separate mobile home-screen artwork
 - Separate master-sound and music controls plus music and effects sliders
 - Responsive layouts for phones, tablets, laptops, and desktops
 - Keyboard and screen-reader labels for every control
 
 The game has no application accounts, advertising, tracking, Firebase project,
-or saved personal data. All music and effects are produced locally with Web
-Audio. There is no speech synthesis, voice service, or recorded speech. The
+or saved personal data. Music is synthesized locally; original train effects are
+served as small bundled MP3 files without blocking animation. There is no speech synthesis, voice service, or recorded speech. The
 Henry greeting is an on-screen caption only. Muting all sound or setting SFX to
 zero also mutes the train effects.
 
@@ -81,12 +80,17 @@ npm test
 ```
 
 The artwork in `public/assets/` was created specifically for this project.
-Music and sound effects are synthesized in real time, so there are no
-third-party audio files or licenses to manage.
+The original train recordings are created from `lib/train-sound.ts` with
+`scripts/render-train-audio.mjs` (optional developer regeneration requires FFmpeg).
+Music and other effects are synthesized live. No external audio service is used.
 
-The source squirrel, turtle, leaf, and butterfly art is in
-`public/assets/henry-surprise-atlas-v1.png`. `lib/surprise-sprites.json` supplies
-the exact native clipping silhouettes. The game now uses pre-rendered transparent
-PNGs in `public/assets/wildlife/` for reliable mobile rendering. See
-`docs/surprise-art.md` for the original brief and `docs/branding-art.md` for the
-sharing artwork, mobile icons, and sprite export details.
+The rebuilt game uses real-alpha WebP sprites in `public/assets/trains/`,
+`crossing/` and `wildlife-v3/`. Henry has separate artwork for each direction,
+with upright lettering. The other unlettered trains can safely reuse mirrored
+art. Generation provenance and crop bounds are in `docs/artwork-revamp.json`.
+The old atlas files are retained as source history but are no longer rendered.
+
+The bottom dock contains just three compact play buttons. Parent settings hold
+the animal toggle and independent volume sliders. Scene taps show one 360ms
+ripple; action locks never keep a touch area highlighted. Browser resizing
+updates only the camera, leaving the train's wheel baseline fixed to the rail.
