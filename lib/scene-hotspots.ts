@@ -5,10 +5,10 @@ export type SceneCamera = { scale: number; x: number; y: number; width: number; 
 export const WORLD = { width: 3072, height: 2048, railY: 1280, trainWidth: 1000 } as const;
 export const ACTION_AREA = { width: 1000, height: 750 } as const;
 export const SIGNALS = {
-  left: { x: 1150, y: 1080, width: 135, height: 280 },
-  right: { x: 1800, y: 1080, width: 135, height: 280 },
+  left: { x: 1039, y: 1090, width: 162, height: 340 },
+  right: { x: 1871, y: 1090, width: 162, height: 340 },
 } as const;
-export const GATES = { left: { x: 1280, y: 1410 }, right: { x: 1792, y: 1410 } } as const;
+export const GATES = { left: { x: 1120, y: 1360 }, right: { x: 1952, y: 1360 } } as const;
 export const SCENE_TARGETS = {
   tree: { x: 1125, y: 1000, width: 160, height: 150 },
   rock: { x: 1920, y: 1480, width: 160, height: 150 },
@@ -37,7 +37,7 @@ export function signalHotspot(camera: SceneCamera, side: keyof typeof SIGNALS) {
 }
 export function gateHotspot(camera: SceneCamera, side: keyof typeof GATES) {
   const hinge = GATES[side];
-  return { ...projectTarget(camera, { x: hinge.x + (side === "left" ? 60 : -60), y: hinge.y - 164, width: 350, height: 74 }), rotation: side === "left" ? -70 : 70 };
+  return { ...projectTarget(camera, { x: hinge.x + (side === "left" ? 73 : -73), y: hinge.y - 202, width: 430, height: 98 }), rotation: side === "left" ? -70 : 70 };
 }
 export function trainTravel(camera: SceneCamera, direction: "left" | "right", trainWidth: number = WORLD.trainWidth) {
   const left = -camera.x / camera.scale - trainWidth - 24;

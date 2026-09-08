@@ -24,17 +24,17 @@ button:focus-visible,a:focus-visible { outline:3px solid #ffdb5b; outline-offset
 .railroad-world { position:absolute; top:0; left:0; transform-origin:0 0; background-size:100% 100%; background-repeat:no-repeat; pointer-events:none; }
 .scene-sprite { display:block; width:100%; height:100%; object-fit:contain; object-position:center bottom; pointer-events:none; user-select:none; }
 .crossing-signal { position:absolute; z-index:15; }
-.signal-lamp { position:absolute; top:44.2%; width:28%; aspect-ratio:1; border-radius:50%; opacity:0; background:radial-gradient(circle,#ffd1a1 0,#ff412c 40%,#ff160bc4 65%,#ff160b00 72%); }
+.signal-lamp { position:absolute; top:43%; width:28%; aspect-ratio:1; border-radius:50%; opacity:0; background:radial-gradient(circle,#ffd1a1 0,#ff412c 40%,#ff160bc4 65%,#ff160b00 72%); }
 .lamp-one { left:9%; }
 .lamp-two { right:9%; }
-.is-flashing .signal-lamp { animation:lamp-flash .76s steps(1,end) infinite; }
-.is-flashing .lamp-two { animation-delay:.38s; }
-.crossing-gate { position:absolute; z-index:17; width:360px; height:74px; }
+.is-flashing .signal-lamp { animation:lamp-flash var(--flash-time) steps(1,end) infinite; }
+.is-flashing .lamp-two { animation-delay:var(--flash-half); }
+.crossing-gate { position:absolute; z-index:17; width:480px; height:98.4px; }
 .crossing-gate img { display:block; width:100%; height:auto; }
-.gate-left { transform-origin:36px 37px; margin-left:-36px; margin-top:-37px; transform:rotate(-70deg); }
-.gate-right { transform-origin:324px 37px; margin-left:-324px; margin-top:-37px; transform:rotate(70deg); }
-.gate-left.is-running { animation:gate-left-course 10s ease-in-out both; }
-.gate-right.is-running { animation:gate-right-course 10s ease-in-out both; }
+.gate-left { transform-origin:50.4px 49.2px; margin-left:-50.4px; margin-top:-49.2px; transform:rotate(-70deg); }
+.gate-right { transform-origin:429.6px 49.2px; margin-left:-429.6px; margin-top:-49.2px; transform:rotate(70deg); }
+.gate-left.is-running { animation:gate-left-course var(--gate-time) ease-in-out both; }
+.gate-right.is-running { animation:gate-right-course var(--gate-time) ease-in-out both; }
 .train-runner { position:absolute; left:0; z-index:10; animation:train-pass var(--run-time) linear both; will-change:transform; }
 .train-sprite { display:block; width:100%; height:auto; transform:translateY(-100%); user-select:none; }
 .train-sprite.face-left { transform:translateY(-100%) scaleX(-1); }
@@ -108,5 +108,19 @@ button:focus-visible,a:focus-visible { outline:3px solid #ffdb5b; outline-offset
 @keyframes butterfly-flight { 0% { opacity:0; transform:translate(-50%,-50%); } 15%,75% { opacity:1; } 100% { opacity:0; transform:translate(var(--drift),calc(-1 * var(--lift))); } }
 @keyframes rock-sparkles { 0% { opacity:0; transform:translate(-50%,-50%) scale(.2); } 22%,55% { opacity:1; } 100% { opacity:0; transform:translate(var(--drift),calc(-1 * var(--lift))) scale(.4); } }
 @media (max-width:560px) { .game-header { gap:6px; padding-left:max(8px,env(safe-area-inset-left)); padding-right:max(8px,env(safe-area-inset-right)); }.sound-controls { gap:4px; }.big-buttons { gap:8px; }.game-button { gap:6px!important; font-size:.875rem!important; }.game-button svg { width:25px!important; height:25px!important; } }
-@media (max-height:450px) and (orientation:landscape) { .game-header { padding-top:max(3px,env(safe-area-inset-top)); padding-bottom:3px; }.game-header h1 { font-size:1.05rem; }.control-deck { padding-top:5px; }.game-button { height:44px!important; }.game-center-footer { position:absolute; right:max(10px,env(safe-area-inset-right)); top:10px; margin:0; }.game-center-footer span { display:none; }.game-center-footer img { width:24px; height:24px; }.big-buttons { max-width:min(650px,calc(100% - 65px)); }.scene-tip { top:6px; padding:6px 10px; }.status-pill { font-size:.75rem; padding:3px 10px; bottom:3px; } }
-@media (prefers-reduced-motion:reduce) { .animal-friend,.bird-flock,.surprise-particle,.rock-sparkle { animation:none; }.animal-friend,.bird-flock,.surprise-particle { opacity:1; }.tap-ring { animation:none; opacity:0; }.is-flashing .signal-lamp { animation:none; opacity:.75; }.scene-tip { transition:none; } }
+@media (max-height:450px) and (orientation:landscape) { .game-header { padding-top:max(3px,env(safe-area-inset-top)); padding-bottom:3px; }.game-header h1 { font-size:1.05rem; }.control-deck { padding-top:5px; }.game-button { height:44px!important; }.game-center-footer { position:absolute; right:max(10px,env(safe-area-inset-right)); top:10px; margin:0; }.game-center-footer span { display:none; }.game-center-footer img { width:24px; height:24px; }.big-buttons { max-width:650px; }.scene-tip { top:6px; padding:6px 10px; }.status-pill { font-size:.75rem; padding:3px 10px; bottom:3px; } }
+@media (prefers-reduced-motion:reduce) { .animal-friend,.bird-flock,.surprise-particle,.rock-sparkle { animation:none; }.animal-friend,.bird-flock,.surprise-particle { opacity:1; }.tap-ring { animation:none; opacity:0; }.scene-tip { transition:none; } }
+
+.action-column { min-width:0; }
+.speed-slider { min-height:32px!important; margin:4px 8px 0; width:calc(100% - 16px)!important; }
+.speed-slider [data-slot="slider-track"] { height:7px; background:#a7cfdb; }
+.speed-slider [data-slot="slider-range"] { background:#ffcf52; }
+.speed-slider [data-slot="slider-thumb"] { width:21px; height:21px; border:2px solid #fff8df; background:#2785b0; }
+.speed-caption { display:block; text-align:center; color:#f4f4dc; font-size:.75rem; line-height:1.1; }
+.text-toggle { display:flex!important; margin:2px auto 0; min-height:32px; padding:3px 12px!important; color:#f4f4dc!important; font-size:.75rem; gap:6px; }
+.text-toggle svg { width:17px; height:17px; }
+.hide-play-text .scene-tip,.hide-play-text .status-pill { opacity:0; }
+.hide-play-text .game-button span,.hide-play-text .speed-caption { visibility:hidden; }
+.hide-play-text .game-button span { display:none; }
+.hide-play-text .game-header h1 { visibility:hidden; }
+@media(max-height:450px) and (orientation:landscape) { .speed-caption { display:none; }.speed-slider { margin-top:0; min-height:28px!important; }.text-toggle { min-height:26px; margin:0 auto; } }

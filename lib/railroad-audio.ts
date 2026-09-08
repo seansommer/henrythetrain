@@ -153,9 +153,9 @@ export class RailroadAudio {
     this.tone({ frequency: 620, duration: 0.09, volume: 0.06, when: 1.55, type: "square" });
   }
 
-  async playTrain(train: number, elapsed = 0, direction: "left" | "right" = "right") {
+  async playTrain(train: number, elapsed = 0, direction: "left" | "right" = "right", speed = 1) {
     const context = this.context;
-    if (!context || !this.effects || !TRAIN_PROFILES[train] || elapsed >= TRAIN_RUN_MS / 1000) return;
+    if (!context || !this.effects || !TRAIN_PROFILES[train] || elapsed >= TRAIN_RUN_MS / 1000 / speed) return;
     const began = Date.now();
     let loading = this.trainBuffers.get(train);
     if (!loading) {
@@ -169,16 +169,17 @@ export class RailroadAudio {
     try { buffer = await loading; }
     catch { this.trainBuffers.delete(train); return; }
     if (this.context !== context || context.state !== "running") return;
-    const offset = Math.max(0, elapsed + (Date.now() - began) / 1000);
+    const offset = Math.max(0, (elapsed + (Date.now() - began) / 1000) * speed);
     if (offset >= buffer.duration) return;
     try { this.trainSource?.stop(); } catch { /* already ended */ }
     const source = context.createBufferSource();
     source.buffer = buffer;
+    source.playbackRate.value = speed;
     const panner = context.createStereoPanner();
     const start = context.currentTime;
     const sign = direction === "right" ? 1 : -1;
     panner.pan.setValueAtTime(sign * (-.85 + 1.7 * offset / buffer.duration), start);
-    panner.pan.linearRampToValueAtTime(sign * .85, start + buffer.duration - offset);
+    panner.pan.linearRampToValueAtTime(sign * .85, start + (buffer.duration - offset) / speed);
     source.connect(panner); panner.connect(this.effects);
     this.trainSource = source;
     source.onended = () => { source.disconnect(); panner.disconnect(); if (this.trainSource === source) this.trainSource = null; };

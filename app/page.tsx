@@ -21,6 +21,7 @@ import {
   VolumeX,
   Settings2,
   X,
+  Type,
 } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -61,6 +62,10 @@ function useTimeoutRegistry() {
 }
 
 export default function Home() {
+  const [textVisible, setTextVisible] = useState(true);
+  const [trainSpeed, setTrainSpeed] = useState(1);
+  const [lightSpeed, setLightSpeed] = useState(1);
+  const [gateSpeed, setGateSpeed] = useState(1);
   const [trainActive, setTrainActive] = useState(false);
   const [activeTrain, setActiveTrain] = useState(0);
   const [trainDirection, setTrainDirection] = useState<TrainTrip["direction"]>("right");
@@ -210,12 +215,12 @@ export default function Home() {
       setTrainActive(false);
       setAnnouncement("The track is clear. What will come next?");
       trainBusy.current = false;
-    }, TRAIN_RUN_MS);
+    }, TRAIN_RUN_MS / trainSpeed);
     if (await ensureAudio()) {
       audio.current?.playButton();
-      audio.current?.playTrain(chosen, (performance.now() - started) / 1000, trip.direction);
+      audio.current?.playTrain(chosen, (performance.now() - started) / 1000, trip.direction, trainSpeed);
     }
-  }, [beginGame, ensureAudio, schedule]);
+  }, [beginGame, ensureAudio, schedule, trainSpeed]);
 
   const triggerLights = async () => {
     if (lightsBusy.current) return;
@@ -227,9 +232,9 @@ export default function Home() {
       setLightsActive(false);
       setAnnouncement("The crossing lights are off.");
       lightsBusy.current = false;
-    }, LIGHT_RUN_MS);
+    }, LIGHT_RUN_MS / lightSpeed);
     for (let bell = 1; bell <= 12; bell += 1) {
-      schedule(() => audio.current?.playCrossingBell(), bell * 760);
+      schedule(() => audio.current?.playCrossingBell(), bell * 760 / lightSpeed);
     }
     if (await ensureAudio()) {
       if (!lightsBusy.current) return;
@@ -244,12 +249,12 @@ export default function Home() {
     gatesBusy.current = true;
     setGatesActive(true);
     setAnnouncement("The railroad gates are coming down!");
-    schedule(() => audio.current?.playGate("up"), 7_900);
+    schedule(() => audio.current?.playGate("up"), 7_900 / gateSpeed);
     schedule(() => {
       setGatesActive(false);
       setAnnouncement("The railroad gates are back up.");
       gatesBusy.current = false;
-    }, GATE_RUN_MS);
+    }, GATE_RUN_MS / gateSpeed);
     if (await ensureAudio()) {
       if (!gatesBusy.current) return;
       audio.current?.playButton();
@@ -288,11 +293,11 @@ export default function Home() {
   const trainStyle = {
     top: WORLD.railY, width: trainWidth,
     "--travel-from": `${travel.from}px`, "--travel-to": `${travel.to}px`,
-    "--run-time": `${TRAIN_RUN_MS}ms`,
+    "--run-time": `${TRAIN_RUN_MS / trainSpeed}ms`,
   } as CSSProperties;
 
   return (
-    <main className="railroad-app">
+    <main className={`railroad-app ${textVisible ? "" : "hide-play-text"}`} style={{ "--gate-time": `${GATE_RUN_MS / gateSpeed}ms`, "--flash-time": `${1.2 / lightSpeed}s`, "--flash-half": `${-.6 / lightSpeed}s` } as CSSProperties}>
       <header className="game-header">
         <a className="game-center-shortcut" href="https://seansommer.github.io/gamecenter/" target="_top" aria-label="Return to Game Center" title="Game Center">
           <img src={assetUrl("/game-center-icon.png")} width="36" height="36" alt="" />
@@ -372,22 +377,29 @@ export default function Home() {
 
       <section className="control-deck" aria-label="Railroad controls">
         <div className="big-buttons">
+          <div className="action-column">
           <Button type="button" size="lg" className="game-button train-button" onClick={triggerTrain}
             disabled={trainActive} aria-busy={trainActive} aria-label="Send a Train">
             <TrainFront /><span>Train</span>
           </Button>
+          <Slider className="speed-slider" min={0.5} max={1.5} step={0.25} value={[trainSpeed]} disabled={trainActive} onValueChange={value => setTrainSpeed(value[0] ?? 1)} aria-label="Train animation speed" aria-valuetext={`${trainSpeed} times normal speed; adjust between runs`} />
+          <small className="speed-caption">Train speed · {trainSpeed}×</small></div>
+          <div className="action-column">
           <Button type="button" size="lg" className="game-button lights-button" onClick={triggerLights}
             disabled={lightsActive} aria-busy={lightsActive} aria-label="Flash the Lights">
             <Siren /><span>Lights</span>
           </Button>
+          <Slider className="speed-slider" min={0.5} max={1.5} step={0.25} value={[lightSpeed]} disabled={lightsActive} onValueChange={value => setLightSpeed(value[0] ?? 1)} aria-label="Lights animation speed" aria-valuetext={`${lightSpeed} times normal speed; adjust between runs`} />
+          <small className="speed-caption">Lights speed · {lightSpeed}×</small></div>
+          <div className="action-column">
           <Button type="button" size="lg" className="game-button gates-button" onClick={triggerGates}
             disabled={gatesActive} aria-busy={gatesActive} aria-label="Lower the Gates">
             <Play className="gate-icon" /><span>Gates</span>
           </Button>
+          <Slider className="speed-slider" min={0.5} max={1.5} step={0.25} value={[gateSpeed]} disabled={gatesActive} onValueChange={value => setGateSpeed(value[0] ?? 1)} aria-label="Gates animation speed" aria-valuetext={`${gateSpeed} times normal speed; adjust between runs`} />
+          <small className="speed-caption">Gates speed · {gateSpeed}×</small></div>
         </div>
-        <a className="game-center-footer" href="https://seansommer.github.io/gamecenter/" target="_top" aria-label="Return to Game Center">
-          <img src={assetUrl("/game-center-icon.png")} width="18" height="18" alt="" /><span>Game Center</span>
-        </a>
+        <Button type="button" variant="ghost" className="text-toggle" aria-label={textVisible ? "Hide game text" : "Show game text"} aria-pressed={!textVisible} onClick={() => setTextVisible(value => !value)}><Type /><span>{textVisible ? "Hide text" : "Show text"}</span></Button>
       </section>
 
       <dialog ref={settings} id="parent-settings" className="parent-settings" aria-labelledby="settings-title">

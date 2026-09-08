@@ -6,10 +6,13 @@ const { TRAIN_PROFILES, createTrainTrips, shuffledBag, availableSurprises } = lo
 const { WORLD, sceneCamera, sceneHotspots, trackHotspot, signalHotspot, gateHotspot, trainTravel } = loadTs('../lib/scene-hotspots.ts');
 const page=await readFile(new URL('../app/page.tsx',import.meta.url),'utf8');
 const screens=[[320,410],[390,660],[430,750],[768,820],[1440,752],[844,230],[932,250],[1920,930],[320,720]];
-test('each of ten trains goes out and returns before another surprise is selected',()=>{
- const next=createTrainTrips();const seen=new Set();
- for(let i=0;i<10;i++) { const out=next(),back=next();assert.equal(out.direction,'right');assert.equal(back.direction,'left');assert.equal(back.train,out.train);seen.add(out.train); }
- assert.equal(seen.size,10);assert.equal(TRAIN_PROFILES.length,10);
+test('shuffled trains alternate their own direction without immediate repeats',()=>{
+ const next=createTrainTrips(); const lastDirections=new Map(); let previous=-1;
+ for(let cycle=0;cycle<5;cycle++) { const seen=new Set(); for(let i=0;i<10;i++) {
+  const trip=next(); assert.notEqual(trip.train,previous); previous=trip.train;
+  assert.equal(trip.direction,lastDirections.get(trip.train)==='right'?'left':'right');
+  lastDirections.set(trip.train,trip.direction);seen.add(trip.train);
+ } assert.equal(seen.size,10); }
 });
 test('shuffle bags contain every train exactly once',()=>{ const bag=shuffledBag(10);assert.equal(new Set(bag).size,10);assert.ok(bag.every(v=>v>=0&&v<10)); });
 test('every camera keeps the rail and central touch target together without stretching',()=>{
@@ -25,6 +28,6 @@ test('both directions enter and leave fully outside the camera including longer 
 });
 test('animals off excludes every animal surprise',()=>{for(const target of ['tree','rock']) {const choices=availableSurprises(target,false);assert.ok(choices.length);assert.ok(choices.every(k=>k==='leaves'||k==='sparkles'));}});
 test('independent actions complete even when audio cannot start',()=>{
- for(const [name,flag,duration] of [['Train','train','TRAIN'],['Lights','lights','LIGHT'],['Gates','gates','GATE']]){const start=page.indexOf(`const trigger${name} =`),section=page.slice(start,start+1900);assert.match(section,new RegExp(`if \\(${flag}Busy.current\\) return`));assert.ok(section.indexOf(`}, ${duration}_RUN_MS)`) < section.indexOf('await ensureAudio()'));}
+ for(const [name,flag,duration] of [['Train','train','TRAIN'],['Lights','lights','LIGHT'],['Gates','gates','GATE']]){const start=page.indexOf(`const trigger${name} =`),section=page.slice(start,start+1900);assert.match(section,new RegExp(`if \\(${flag}Busy.current\\) return`));assert.ok(section.indexOf(`}, ${duration}_RUN_MS /`) < section.indexOf('await ensureAudio()'));}
  assert.doesNotMatch(page,/speechSynthesis|speakTrain/);
 });

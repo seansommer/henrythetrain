@@ -8,7 +8,7 @@ flash the warning lights, or lower and raise the crossing gates.
 
 ## What is included
 
-- Ten distinct train surprises: each goes out, then returns on the next tap before the next train is selected
+- Ten distinct train surprises: shuffled order, with each train reversing direction on its next appearance and no immediate repeats
 - A blue passenger train with **HENRY** on its engine
 - Fixed, non-restartable light and gate sequences
 - Controls that can all run at the same time
@@ -94,3 +94,5 @@ The bottom dock contains just three compact play buttons. Parent settings hold
 the animal toggle and independent volume sliders. Scene taps show one 360ms
 ripple; action locks never keep a touch area highlighted. Browser resizing
 updates only the camera, leaving the train's wheel baseline fixed to the rail.
+
+Animation controls: compact sliders beneath Train, Lights and Gates select 0.5×–1.5× speed between runs. Train audio follows the selected train speed. The bottom Hide text / Show text toggle hides the scene messages and play labels; accessible names and parent settings remain available. Only the header links to Game Center. Enlarged gate arms pivot at the signal posts and meet across the path. Crossing lamps alternate even when reduced motion is enabled.
