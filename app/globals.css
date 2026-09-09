@@ -58,8 +58,6 @@ button:focus-visible,a:focus-visible { outline:3px solid #ffdb5b; outline-offset
 .lights-button { background:#f2bd31!important; color:#3c2c12!important; }
 .gates-button { background:#2888bc!important; }
 .gate-icon { transform:rotate(-30deg); }
-.game-center-footer { display:flex; align-items:center; justify-content:center; gap:5px; width:max-content; max-width:100%; min-height:24px; margin:3px auto 0; color:#e3d49f; font-size:.75rem; text-decoration:none; }
-.game-center-footer img { border-radius:5px; }
 
 .parent-settings { margin:auto; width:min(420px,calc(100% - 24px)); max-height:calc(100dvh - 28px); padding:22px; overflow:auto; background:#f4fbf7; color:#173f55; border:3px solid #abd8d8; border-radius:23px; box-shadow:0 20px 90px #102f4970; }
 .parent-settings::backdrop { background:#082531b8; }
@@ -86,13 +84,7 @@ button:focus-visible,a:focus-visible { outline:3px solid #ffdb5b; outline-offset
 .settings-note { font-size:.875rem; line-height:1.5; margin:0 0 18px; }
 .back-to-play { width:100%; min-height:48px; background:#25759e!important; color:white!important; border-radius:12px; font-size:1rem; font-weight:800; }
 
-.animal-friend { position:absolute; z-index:19; top:1400px; width:210px; height:230px; animation:animal-hello 3.9s ease-in-out both; transform-origin:center bottom; }
-.animal-0 { left:1110px; }.animal-1 { left:1670px; }.animal-2 { left:1300px; }.animal-3 { left:1750px; }
-.bird-flock { position:absolute; z-index:4; top:920px; left:1000px; width:180px; height:145px; animation:birds-cross 8.5s linear both; }
-.flock-1 { top:1010px; animation-direction:reverse; }
 .surprise-event { position:absolute; inset:0; pointer-events:none; z-index:19; }
-.secret-animal { animation-duration:4.8s; }.secret-tree { left:1100px; }.secret-rock { left:1710px; }
-.secret-birds { top:980px; }
 .surprise-particle { position:absolute; width:65px; height:65px; opacity:0; }
 .breeze-leaf { animation:leaf-breeze 3.4s ease-out both; animation-delay:calc(var(--i) * .13s); }
 .secret-butterfly { width:95px; height:95px; animation:butterfly-flight 3.9s ease-in-out both; animation-delay:calc(var(--i) * .2s); }
@@ -102,14 +94,10 @@ button:focus-visible,a:focus-visible { outline:3px solid #ffdb5b; outline-offset
 @keyframes gate-right-course { 0%,100% { transform:rotate(70deg); } 17%,79% { transform:rotate(0); } }
 @keyframes train-pass { from { transform:translateX(var(--travel-from)); } to { transform:translateX(var(--travel-to)); } }
 @keyframes tap-feedback { from { opacity:.9; transform:translate(-50%,-50%) scale(.5); } to { opacity:0; transform:translate(-50%,-50%) scale(1.7); } }
-@keyframes animal-hello { 0%,100% { opacity:0; transform:translateY(40px) scale(.8); } 16%,83% { opacity:1; transform:translateY(0) scale(1); } 35%,55% { transform:translateY(-8px) rotate(-3deg); } 45%,65% { transform:translateY(0) rotate(3deg); } }
-@keyframes birds-cross { 0% { transform:translate(-400px,20px); opacity:0; } 10%,85% { opacity:1; } 45% { transform:translate(300px,-55px); } 100% { transform:translate(1400px,10px); opacity:0; } }
 @keyframes leaf-breeze { 0% { opacity:0; transform:translate(-50%,-50%) rotate(0); } 15%,75% { opacity:1; } 100% { opacity:0; transform:translate(var(--drift),160px) rotate(240deg); } }
 @keyframes butterfly-flight { 0% { opacity:0; transform:translate(-50%,-50%); } 15%,75% { opacity:1; } 100% { opacity:0; transform:translate(var(--drift),calc(-1 * var(--lift))); } }
 @keyframes rock-sparkles { 0% { opacity:0; transform:translate(-50%,-50%) scale(.2); } 22%,55% { opacity:1; } 100% { opacity:0; transform:translate(var(--drift),calc(-1 * var(--lift))) scale(.4); } }
 @media (max-width:560px) { .game-header { gap:6px; padding-left:max(8px,env(safe-area-inset-left)); padding-right:max(8px,env(safe-area-inset-right)); }.sound-controls { gap:4px; }.big-buttons { gap:8px; }.game-button { gap:6px!important; font-size:.875rem!important; }.game-button svg { width:25px!important; height:25px!important; } }
-@media (max-height:450px) and (orientation:landscape) { .game-header { padding-top:max(3px,env(safe-area-inset-top)); padding-bottom:3px; }.game-header h1 { font-size:1.05rem; }.control-deck { padding-top:5px; }.game-button { height:44px!important; }.game-center-footer { position:absolute; right:max(10px,env(safe-area-inset-right)); top:10px; margin:0; }.game-center-footer span { display:none; }.game-center-footer img { width:24px; height:24px; }.big-buttons { max-width:650px; }.scene-tip { top:6px; padding:6px 10px; }.status-pill { font-size:.75rem; padding:3px 10px; bottom:3px; } }
-@media (prefers-reduced-motion:reduce) { .animal-friend,.bird-flock,.surprise-particle,.rock-sparkle { animation:none; }.animal-friend,.bird-flock,.surprise-particle { opacity:1; }.tap-ring { animation:none; opacity:0; }.scene-tip { transition:none; } }
 
 .action-column { min-width:0; }
 .speed-slider { min-height:32px!important; margin:4px 8px 0; width:calc(100% - 16px)!important; }
@@ -123,4 +111,83 @@ button:focus-visible,a:focus-visible { outline:3px solid #ffdb5b; outline-offset
 .hide-play-text .game-button span,.hide-play-text .speed-caption { visibility:hidden; }
 .hide-play-text .game-button span { display:none; }
 .hide-play-text .game-header h1 { visibility:hidden; }
-@media(max-height:450px) and (orientation:landscape) { .speed-caption { display:none; }.speed-slider { margin-top:0; min-height:28px!important; }.text-toggle { min-height:26px; margin:0 auto; } }
+
+/* Bright glass controls, with the landscape kept as the main play surface. */
+html,body { background:#0e2244; }
+.game-header { background:linear-gradient(135deg,#244776,#102a51 68%,#123b58); border-bottom-color:#86e9fb75; }
+.game-header h1 { color:#edfbff; text-shadow:0 2px 0 #071e46; }
+.round-control { background:linear-gradient(#80d9f72b,#2c6b9220)!important; border-color:#b4effa55!important; box-shadow:inset 0 1px 0 #fff4!important; }
+.control-deck { background:linear-gradient(150deg,#183f68,#102544); border-color:#76defb75; }
+.game-button { position:relative; overflow:hidden; border-color:#d6fbffae!important; box-shadow:inset 0 2px 0 #fff8,inset 0 -5px 0 #061f5352,0 3px 0 #071c37,0 5px 12px #041e4633!important; border-radius:18px!important; text-shadow:0 1px 2px #04305a88; }
+.game-button::before { content:""; position:absolute; inset:3px 4px 52%; border-radius:13px 13px 8px 8px; background:linear-gradient(#ffffffe0,#ffffff12); opacity:.45; pointer-events:none; }
+.game-button span,.game-button svg { position:relative; z-index:1; }
+.train-button { background:linear-gradient(150deg,#45e8f4,#159cdd 55%,#2564c7)!important; }
+.lights-button { background:linear-gradient(150deg,#c5a4ff,#9160e7 55%,#623bd1)!important; color:#fff!important; }
+.gates-button { background:linear-gradient(150deg,#e5ff99,#a4df5c 55%,#5dab43)!important; color:#183c2b!important; text-shadow:0 1px 0 #fff8; }
+.game-button:disabled { opacity:.8!important; filter:saturate(.9); }
+.speed-slider [data-slot="slider-track"] { background:#142d50; border:1px solid #72c7e477; height:8px; }
+.speed-slider [data-slot="slider-range"] { background:linear-gradient(90deg,#32c9ef,#a3f4f7); }
+.speed-slider [data-slot="slider-thumb"] { background:linear-gradient(#fff,#85ddec); border-color:#fff; box-shadow:0 1px 5px #020e3280; }
+.action-column:nth-child(2) [data-slot="slider-range"] { background:#b698ff; }
+.action-column:nth-child(3) [data-slot="slider-range"] { background:#b2ed6c; }
+.post-grass { position:absolute; z-index:1; width:160%; height:auto; left:-30%; bottom:-16px; pointer-events:none; }
+
+/* Every visitor travels in from a real screen edge and leaves before removal. */
+.wildlife-visitor { position:absolute; left:0; top:0; z-index:19; pointer-events:none; opacity:0; transform:translate(var(--from-x),var(--from-y)); animation:visitor-walk var(--visit-time) linear both; animation-delay:var(--visit-delay); }
+.wildlife-body { width:100%; height:100%; transform-origin:center bottom; filter:drop-shadow(0 7px 5px #213d2822); }
+.visitor-deer .wildlife-body { animation:deer-steps .8s ease-in-out infinite; }
+.visitor-rabbit { animation-name:visitor-hop; }
+.visitor-rabbit .wildlife-body { animation:rabbit-hop .85s ease-in-out infinite; }
+.visitor-raccoon { animation-name:visitor-waddle; }
+.visitor-raccoon .wildlife-body { animation:raccoon-waddle .7s ease-in-out infinite; }
+.visitor-bear { animation-name:visitor-peek; }
+.visitor-bear .wildlife-body { animation:bear-hello 2.2s ease-in-out infinite; }
+.visitor-squirrel { animation-name:visitor-dash; }
+.visitor-squirrel .wildlife-body { animation:squirrel-scamper .48s ease-in-out infinite; }
+.visitor-turtle { animation-name:visitor-crawl; }
+.visitor-turtle .wildlife-body { animation:turtle-step 1.8s ease-in-out infinite; }
+.visitor-blue-birds,.visitor-brown-birds { z-index:5; animation-name:visitor-flight; }
+.visitor-blue-birds .wildlife-body { animation:bird-wingbeat .38s ease-in-out infinite; transform-origin:center; }
+.visitor-brown-birds .wildlife-body { animation:bird-wingbeat .48s ease-in-out infinite reverse; transform-origin:center; }
+.visitor-butterfly { z-index:20; animation-name:visitor-butterfly; }
+.visitor-butterfly .wildlife-body { animation:butterfly-wings .3s ease-in-out infinite; transform-origin:center; }
+@keyframes visitor-walk { 0% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 5% { opacity:1; } 36%,57% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } 95% { opacity:1; } 100% { opacity:0; transform:translate(var(--to-x),var(--to-y)); } }
+@keyframes visitor-hop { 0% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 7% { opacity:1; } 34%,52% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } 94% { opacity:1; } 100% { opacity:0; transform:translate(var(--to-x),var(--to-y)); } }
+@keyframes visitor-waddle { 0% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 5% { opacity:1; } 42%,65% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } 95% { opacity:1; } 100% { opacity:0; transform:translate(var(--to-x),var(--to-y)); } }
+@keyframes visitor-peek { 0%,100% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 28%,72% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } }
+@keyframes visitor-dash { 0% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 3% { opacity:1; } 22%,73% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } 97% { opacity:1; } 100% { opacity:0; transform:translate(var(--to-x),var(--to-y)); } }
+@keyframes visitor-crawl { 0% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 5% { opacity:1; } 46%,64% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } 95% { opacity:1; } 100% { opacity:0; transform:translate(var(--to-x),var(--to-y)); } }
+@keyframes visitor-flight { 0% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 4% { opacity:1; } 50% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } 96% { opacity:1; } 100% { opacity:0; transform:translate(var(--to-x),var(--to-y)); } }
+@keyframes visitor-butterfly { 0% { opacity:0; transform:translate(var(--from-x),var(--from-y)); } 8% { opacity:1; } 45% { opacity:1; transform:translate(var(--stop-x),var(--stop-y)); } 65% { opacity:1; transform:translate(calc(var(--stop-x) + 80px),calc(var(--stop-y) - 60px)); } 94% { opacity:1; } 100% { opacity:0; transform:translate(var(--to-x),var(--to-y)); } }
+@keyframes deer-steps { 0%,100% { transform:translateY(0) rotate(-1deg); } 50% { transform:translateY(-5px) rotate(1deg); } }
+@keyframes rabbit-hop { 0%,100% { transform:translateY(0) scaleY(.97); } 45% { transform:translateY(-28px) scaleY(1.03); } }
+@keyframes raccoon-waddle { 0%,100% { transform:rotate(-3deg) translateY(0); } 50% { transform:rotate(3deg) translateY(-4px); } }
+@keyframes bear-hello { 0%,100% { transform:rotate(-2deg); } 50% { transform:rotate(3deg); } }
+@keyframes squirrel-scamper { 0%,100% { transform:translateY(0) rotate(-2deg); } 50% { transform:translateY(-9px) rotate(2deg); } }
+@keyframes turtle-step { 0%,100% { transform:rotate(-1deg); } 50% { transform:translateY(-3px) rotate(1deg); } }
+@keyframes bird-wingbeat { 0%,100% { transform:translateY(0) scaleY(1); } 50% { transform:translateY(-5px) scaleY(.83); } }
+@keyframes butterfly-wings { 0%,100% { transform:rotate(-5deg) scaleX(1); } 50% { transform:rotate(5deg) scaleX(.64); } }
+
+@media (orientation:landscape) and (max-height:600px) {
+  .railroad-app { grid-template-columns:minmax(0,1fr) clamp(108px,15vw,142px); grid-template-rows:auto minmax(0,1fr); }
+  .game-header { grid-column:1 / -1; grid-row:1; padding-top:max(3px,env(safe-area-inset-top)); padding-bottom:3px; }
+  .game-header h1 { font-size:1.1rem; }
+  .railroad-stage { grid-column:1; grid-row:2; }
+  .control-deck { grid-column:2; grid-row:2; display:flex; flex-direction:column; justify-content:center; gap:4px; min-height:0; padding:4px max(8px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) 8px; border-top:0; border-left:2px solid #76defb75; overflow:auto; }
+  .big-buttons { display:grid; grid-template-columns:minmax(0,1fr); gap:4px; width:100%; margin:0; max-width:none; }
+  .game-button { height:44px!important; font-size:.8rem!important; gap:5px!important; padding:4px!important; border-radius:13px!important; }
+  .game-button svg { width:22px!important; height:22px!important; }
+  .speed-slider { min-height:24px!important; margin:0 7px; width:calc(100% - 14px)!important; }
+  .speed-caption { display:none; }
+  .text-toggle { min-height:28px; margin:0; flex-shrink:0; padding:2px!important; }
+  .scene-tip { top:5px; padding:5px 10px; font-size:.75rem; }
+  .status-pill { padding:3px 10px; }
+}
+@media (orientation:landscape) and (max-height:340px) { .control-deck { justify-content:flex-start; } }
+@media (prefers-reduced-motion:reduce) {
+  .wildlife-body { animation:none!important; }
+  .tap-ring { animation:none; opacity:0; }
+  .scene-tip { transition:none; }
+  .breeze-leaf,.rock-sparkle { animation-name:gentle-surprise; }
+}
+@keyframes gentle-surprise { 0%,100% { opacity:0; } 25%,70% { opacity:1; } }

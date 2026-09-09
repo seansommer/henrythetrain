@@ -8,7 +8,7 @@ flash the warning lights, or lower and raise the crossing gates.
 
 ## What is included
 
-- Ten distinct train surprises: shuffled order, with each train reversing direction on its next appearance and no immediate repeats
+- Ten distinct train surprises: independent random draws from all ten engines, with each train reversing direction on its next appearance
 - A blue passenger train with **HENRY** on its engine
 - Fixed, non-restartable light and gate sequences
 - Controls that can all run at the same time
@@ -96,3 +96,6 @@ ripple; action locks never keep a touch area highlighted. Browser resizing
 updates only the camera, leaving the train's wheel baseline fixed to the rail.
 
 Animation controls: compact sliders beneath Train, Lights and Gates select 0.5×–1.5× speed between runs. Train audio follows the selected train speed. The bottom Hide text / Show text toggle hides the scene messages and play labels; accessible names and parent settings remain available. Only the header links to Game Center. Enlarged gate arms pivot at the signal posts and meet across the path. Crossing lamps alternate even when reduced motion is enabled.
+
+
+The foreground rock sits lower with its tap target following the artwork, and transparent grass tufts dress both signal bases. The shared camera frames the extra foreground without stretching any sprites. Every animal has a screen-aware entrance, pause or flight, and exit; reduced motion removes the small bounces and wingbeats while keeping gentle travel. Landscape phones use a narrow control dock on the right instead of a bottom panel. Cyan, violet and lime glossy buttons keep each action distinct. Speeds, text visibility, animals and sound preferences are saved only in this browser. Artwork prompts and export provenance are in `docs/artwork-ground-v5.json`.

@@ -8,7 +8,7 @@ assert.match(html, /Henry the Train/);
 assert.match(html, /Send a Train/);
 assert.match(html, /Show animal visitors/);
 assert.ok(html.includes(`${base}/_next/`), "JavaScript must use the repository subpath");
-for (const name of ["railroad-world-v3.webp", "trains/1-right.webp", "trains/1-left.webp", "crossing/gate-left.webp", "crossing/gate-right.webp"]) {
+for (const name of ["railroad-world-v5.webp", "trains/1-right.webp", "trains/1-left.webp", "crossing/gate-left.webp", "crossing/gate-right.webp", "crossing/post-grass-v4.webp"]) {
   await access(new URL(`../out/assets/${name}`, import.meta.url));
 }
 for (const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)) {

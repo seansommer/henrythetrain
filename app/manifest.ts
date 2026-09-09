@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: assetUrl("/"),
     display: "standalone",
     orientation: "any",
-    background_color: "#91d7f1",
-    theme_color: "#163e57",
+    background_color: "#0e2244",
+    theme_color: "#102a51",
     icons: [
       { src: assetUrl("/icons/henry-home-192.png"), sizes: "192x192", type: "image/png", purpose: "any" },
       { src: assetUrl("/icons/henry-home-512.png"), sizes: "512x512", type: "image/png", purpose: "any" },

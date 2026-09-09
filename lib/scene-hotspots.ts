@@ -3,7 +3,7 @@ export type SceneCamera = { scale: number; x: number; y: number; width: number; 
 
 // All art and movement use world units; only this camera scales the scene.
 export const WORLD = { width: 3072, height: 2048, railY: 1280, trainWidth: 1000 } as const;
-export const ACTION_AREA = { width: 1000, height: 750 } as const;
+export const ACTION_AREA = { width: 1000, height: 1100 } as const;
 export const SIGNALS = {
   left: { x: 1039, y: 1090, width: 162, height: 340 },
   right: { x: 1871, y: 1090, width: 162, height: 340 },
@@ -11,7 +11,7 @@ export const SIGNALS = {
 export const GATES = { left: { x: 1120, y: 1360 }, right: { x: 1952, y: 1360 } } as const;
 export const SCENE_TARGETS = {
   tree: { x: 1125, y: 1000, width: 160, height: 150 },
-  rock: { x: 1920, y: 1480, width: 160, height: 150 },
+  rock: { x: 1944, y: 1740, width: 160, height: 150 },
   train: { x: 1536, y: WORLD.railY, width: 230, height: 120 },
 } as const;
 
@@ -19,7 +19,7 @@ export function sceneCamera(width: number, height: number): SceneCamera {
   width = Math.max(1, width); height = Math.max(1, height);
   const scale = Math.min(width / ACTION_AREA.width, height / ACTION_AREA.height);
   const worldHeight = WORLD.height * scale;
-  const desiredY = height * 0.56 - WORLD.railY * scale;
+  const desiredY = height * 0.42 - WORLD.railY * scale;
   const y = worldHeight < height ? (height - worldHeight) / 2 : Math.max(height - worldHeight, Math.min(0, desiredY));
   return { scale, x: (width - WORLD.width * scale) / 2, y, width, height };
 }

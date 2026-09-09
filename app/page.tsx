@@ -5,11 +5,13 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { SceneHotspot } from "@/components/scene-hotspot";
 import { assetUrl } from "@/lib/asset-url";
+import { WildlifeVisitor } from "@/components/wildlife-visitor";
+import { WILDLIFE, type WildlifeKind } from "@/lib/wildlife-motion";
 import { SurpriseSprite } from "@/components/surprise-sprite";
 import { RailroadAudio } from "@/lib/railroad-audio";
 import { TRAIN_PROFILES, TRAIN_RUN_MS, LIGHT_RUN_MS, GATE_RUN_MS, HENRY_GREETING, shuffledBag, availableSurprises, createTrainTrips, type TrainTrip, type SurpriseTarget, type SurpriseKind } from "@/lib/train-profiles";
 import { WORLD, SIGNALS, GATES, SCENE_TARGETS, sceneCamera, sceneHotspots, trackHotspot, signalHotspot, gateHotspot, trainTravel } from "@/lib/scene-hotspots";
-import { SceneSprite, type SceneSpriteName } from "@/components/scene-sprite";
+import { SceneSprite } from "@/components/scene-sprite";
 import {
   Bird,
   CircleStop,
@@ -26,8 +28,8 @@ import {
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const ANIMAL_SPRITES: SceneSpriteName[] = ["deer", "rabbit", "raccoon", "bear"];
-const BIRD_SPRITES: SceneSpriteName[] = ["blue-birds", "brown-birds"];
+const ANIMAL_SPRITES: WildlifeKind[] = ["deer", "rabbit", "raccoon", "bear"];
+const BIRD_SPRITES: WildlifeKind[] = ["blue-birds", "brown-birds"];
 const SURPRISE_LABELS: Record<SurpriseKind, string> = {
   leaves: "Whoosh! The tree is sending you leaves!",
   squirrel: "Peekaboo! A squirrel says hello!",
@@ -62,6 +64,7 @@ function useTimeoutRegistry() {
 }
 
 export default function Home() {
+  const [preferencesReady, setPreferencesReady] = useState(false);
   const [textVisible, setTextVisible] = useState(true);
   const [trainSpeed, setTrainSpeed] = useState(1);
   const [lightSpeed, setLightSpeed] = useState(1);
@@ -141,6 +144,27 @@ export default function Home() {
   };
 
   useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("henry.play-settings.v1") || "{}");
+      const speed = (value: unknown) => typeof value === "number" && [0.5, 0.75, 1, 1.25, 1.5].includes(value) ? value : 1;
+      setTrainSpeed(speed(saved.trainSpeed)); setLightSpeed(speed(saved.lightSpeed)); setGateSpeed(speed(saved.gateSpeed));
+      if (typeof saved.textVisible === "boolean") setTextVisible(saved.textVisible);
+      if (typeof saved.animalsEnabled === "boolean") toggleAnimals(saved.animalsEnabled);
+      if (typeof saved.soundEnabled === "boolean") setSoundEnabled(saved.soundEnabled);
+      if (typeof saved.musicEnabled === "boolean") setMusicEnabled(saved.musicEnabled);
+      for (const [key, setter] of [["musicVolume", setMusicVolume], ["effectsVolume", setEffectsVolume]] as const) {
+        if (typeof saved[key] === "number" && Number.isFinite(saved[key])) setter(Math.max(0, Math.min(100, saved[key])));
+      }
+    } catch { /* Private browsing and a damaged saved preference keep safe defaults. */ }
+    setPreferencesReady(true);
+  }, []);
+  useEffect(() => {
+    if (!preferencesReady) return;
+    try { localStorage.setItem("henry.play-settings.v1", JSON.stringify({ trainSpeed, lightSpeed, gateSpeed, textVisible, animalsEnabled, soundEnabled, musicEnabled, musicVolume, effectsVolume })); }
+    catch { /* Saving preferences is optional; the game continues normally. */ }
+  }, [preferencesReady, trainSpeed, lightSpeed, gateSpeed, textVisible, animalsEnabled, soundEnabled, musicEnabled, musicVolume, effectsVolume]);
+
+  useEffect(() => {
     audio.current?.setEnabled(soundEnabled);
   }, [soundEnabled]);
 
@@ -174,7 +198,7 @@ export default function Home() {
       schedule(() => {
         if (alive) setAnimal(null);
         schedule(showAnimal, nextDelay(8_000, 19_000));
-      }, 3_900);
+      }, WILDLIFE[ANIMAL_SPRITES[next]].duration + 100);
     };
     const showBirds = () => {
       if (!alive) return;
@@ -185,7 +209,7 @@ export default function Home() {
       schedule(() => {
         if (alive) setBirds(null);
         schedule(showBirds, nextDelay(12_000, 27_000));
-      }, 8_500);
+      }, WILDLIFE[BIRD_SPRITES[next]].duration + 100);
     };
     schedule(showAnimal, nextDelay(5_000, 10_000));
     schedule(showBirds, nextDelay(8_000, 15_000));
@@ -277,7 +301,7 @@ export default function Home() {
     schedule(() => {
       setSurprises((current) => { const remaining = { ...current }; delete remaining[target]; return remaining; });
       surpriseBusy.current[target] = false;
-    }, kind === "birds" ? 8_500 : 4_800);
+    }, kind === "birds" ? WILDLIFE["blue-birds"].duration + 100 : kind === "squirrel" || kind === "turtle" ? WILDLIFE[kind].duration + 100 : kind === "butterflies" ? WILDLIFE.butterfly.duration + 700 : 4_800);
     void ensureAudio().then((ready) => {
       if (!ready || !surpriseBusy.current[target]) return;
       if ((kind === "squirrel" || kind === "turtle") && !animalsAllowed.current) return;
@@ -325,12 +349,13 @@ export default function Home() {
           <div className="railroad-world" aria-hidden="true" style={{
             width: WORLD.width, height: WORLD.height,
             transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
-            backgroundImage: `url("${assetUrl("/assets/railroad-world-v3.webp")}")`,
+            backgroundImage: `url("${assetUrl("/assets/railroad-world-v5.webp")}")`,
           }}>
             {(["left", "right"] as const).map(side => (
               <div key={side} className={`crossing-signal ${lightsActive ? "is-flashing" : ""}`}
                 style={{ left: SIGNALS[side].x, top: SIGNALS[side].y, width: SIGNALS[side].width, height: SIGNALS[side].height }}>
                 <SceneSprite name={`signal-${side}`} />
+                <img className="post-grass" src={assetUrl("/assets/crossing/post-grass-v4.webp")} alt="" draggable={false} />
                 <i className="signal-lamp lamp-one" /><i className="signal-lamp lamp-two" />
               </div>
             ))}
@@ -344,17 +369,17 @@ export default function Home() {
               <img className={`train-sprite ${trainDirection === "left" && activeTrain !== 1 ? "face-left" : ""}`} src={assetUrl(`/assets/trains/${activeTrain}-${activeTrain === 1 ? trainDirection : "right"}.webp`)}
                 alt="" draggable={false} />
             </div>}
-            {birds !== null && animalsEnabled && <div className={`bird-flock flock-${birds}`}><SceneSprite name={BIRD_SPRITES[birds]} /></div>}
-            {animalsEnabled && animal !== null && <div className={`animal-friend animal-${animal}`}><SceneSprite name={ANIMAL_SPRITES[animal]} /></div>}
+            {birds !== null && animalsEnabled && <WildlifeVisitor kind={BIRD_SPRITES[birds]} camera={camera} />}
+            {animalsEnabled && animal !== null && <WildlifeVisitor kind={ANIMAL_SPRITES[animal]} camera={camera} />}
             {(Object.entries(surprises) as [SurpriseTarget, ActiveSurprise][]).map(([target, event]) => (
               <div key={target} className={`surprise-event surprise-${event.kind}`}>
-                {(event.kind === "squirrel" || event.kind === "turtle") && animalsEnabled &&
-                  <div className={`animal-friend secret-animal secret-${target}`}><SurpriseSprite name={event.kind} /></div>}
-                {event.kind === "birds" && animalsEnabled && <div className="bird-flock secret-birds"><SceneSprite name="blue-birds" /></div>}
-                {(event.kind === "leaves" || event.kind === "butterflies" && animalsEnabled) && Array.from({ length: event.kind === "leaves" ? 7 : 4 }, (_, index) => (
-                  <div key={index} className={`surprise-particle ${event.kind === "leaves" ? "breeze-leaf" : "secret-butterfly"}`}
-                    style={{ left: event.x, top: event.y, "--i": index, "--drift": `${(index % 2 ? -1 : 1) * (90 + index * 24)}px`, "--lift": `${80 + index * 24}px` } as CSSProperties}>
-                    <SurpriseSprite name={event.kind === "leaves" ? "leaf" : "butterfly"} />
+                {(event.kind === "squirrel" || event.kind === "turtle") && animalsEnabled && <WildlifeVisitor kind={event.kind} camera={camera} />}
+                {event.kind === "birds" && animalsEnabled && <WildlifeVisitor kind="blue-birds" camera={camera} />}
+                {event.kind === "butterflies" && animalsEnabled && Array.from({ length: 4 }, (_, index) => <WildlifeVisitor key={index} kind="butterfly" camera={camera} index={index} />)}
+                {event.kind === "leaves" && Array.from({ length: 7 }, (_, index) => (
+                  <div key={index} className="surprise-particle breeze-leaf"
+                    style={{ left: event.x, top: event.y, "--i": index, "--drift": `${(index % 2 ? -1 : 1) * (90 + index * 24)}px` } as CSSProperties}>
+                    <SurpriseSprite name="leaf" />
                   </div>
                 ))}
                 {event.kind === "sparkles" && Array.from({ length: 8 }, (_, index) => (

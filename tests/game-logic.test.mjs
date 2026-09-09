@@ -6,13 +6,12 @@ const { TRAIN_PROFILES, createTrainTrips, shuffledBag, availableSurprises } = lo
 const { WORLD, sceneCamera, sceneHotspots, trackHotspot, signalHotspot, gateHotspot, trainTravel } = loadTs('../lib/scene-hotspots.ts');
 const page=await readFile(new URL('../app/page.tsx',import.meta.url),'utf8');
 const screens=[[320,410],[390,660],[430,750],[768,820],[1440,752],[844,230],[932,250],[1920,930],[320,720]];
-test('shuffled trains alternate their own direction without immediate repeats',()=>{
- const next=createTrainTrips(); const lastDirections=new Map(); let previous=-1;
- for(let cycle=0;cycle<5;cycle++) { const seen=new Set(); for(let i=0;i<10;i++) {
-  const trip=next(); assert.notEqual(trip.train,previous); previous=trip.train;
-  assert.equal(trip.direction,lastDirections.get(trip.train)==='right'?'left':'right');
-  lastDirections.set(trip.train,trip.direction);seen.add(trip.train);
- } assert.equal(seen.size,10); }
+test('each tap draws independently from all ten trains and remembers each return direction',()=>{
+ const draws=[0,0,.1,.9,0,.1,.99]; let index=0;
+ const next=createTrainTrips(()=>draws[index++]);
+ const trips=draws.map(()=>next());
+ assert.deepEqual(trips.map(trip=>[trip.train,trip.direction]),[[0,'right'],[0,'left'],[1,'right'],[9,'right'],[0,'right'],[1,'left'],[9,'left']]);
+ for(let train=0;train<10;train++) assert.equal(createTrainTrips(()=>(train+.1)/10)().train,train);
 });
 test('shuffle bags contain every train exactly once',()=>{ const bag=shuffledBag(10);assert.equal(new Set(bag).size,10);assert.ok(bag.every(v=>v>=0&&v<10)); });
 test('every camera keeps the rail and central touch target together without stretching',()=>{
@@ -30,4 +29,15 @@ test('animals off excludes every animal surprise',()=>{for(const target of ['tre
 test('independent actions complete even when audio cannot start',()=>{
  for(const [name,flag,duration] of [['Train','train','TRAIN'],['Lights','lights','LIGHT'],['Gates','gates','GATE']]){const start=page.indexOf(`const trigger${name} =`),section=page.slice(start,start+1900);assert.match(section,new RegExp(`if \\(${flag}Busy.current\\) return`));assert.ok(section.indexOf(`}, ${duration}_RUN_MS /`) < section.indexOf('await ensureAudio()'));}
  assert.doesNotMatch(page,/speechSynthesis|speakTrain/);
+});
+
+test('every wildlife route enters and exits outside the visible camera',()=>{
+ const {WILDLIFE,wildlifePath}=loadTs('../lib/wildlife-motion.ts');
+ for(const [w,h] of screens) for(const kind of Object.keys(WILDLIFE)) {
+  const camera=sceneCamera(w,h), p=wildlifePath(camera,kind);
+  const outside=(x,y)=>((x+p.width)*camera.scale+camera.x<=0 || x*camera.scale+camera.x>=w || (y+p.height)*camera.scale+camera.y<=0 || y*camera.scale+camera.y>=h);
+  assert.ok(outside(p.fromX,p.fromY),`${kind} starts outside ${w}x${h}`);
+  assert.ok(outside(p.toX,p.toY),`${kind} leaves ${w}x${h}`);
+  assert.ok(!outside(p.stopX,p.stopY),`${kind} visits visible foreground/sky`);
+ }
 });

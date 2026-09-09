@@ -40,19 +40,13 @@ export function availableSurprises(target: SurpriseTarget, animals: boolean): re
 
 export type TrainTrip = { train: number; direction: "left" | "right" };
 
-/** Shuffle all trains; each engine remembers which way it must travel next. */
+/** Every tap is an independent draw; each engine keeps its own return direction. */
 export function createTrainTrips(random = Math.random) {
-  let bag: number[] = [];
-  let last = -1;
   const directions = TRAIN_PROFILES.map(() => "right" as TrainTrip["direction"]);
   return (): TrainTrip => {
-    if (!bag.length) {
-      bag = shuffledBag(TRAIN_PROFILES.length, random);
-      if (bag[bag.length - 1] === last) [bag[0], bag[bag.length - 1]] = [bag[bag.length - 1], bag[0]];
-    }
-    const train = bag.pop()!, direction = directions[train];
+    const train = Math.min(TRAIN_PROFILES.length - 1, Math.max(0, Math.floor(random() * TRAIN_PROFILES.length)));
+    const direction = directions[train];
     directions[train] = direction === "right" ? "left" : "right";
-    last = train;
     return { train, direction };
   };
 }
