@@ -10,7 +10,9 @@ const description = "All aboard! Tap trains, crossing lights, gates, and hidden 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover",
+  // Let iOS reserve its status bar, notch and home indicator once. The game
+  // lays out inside that safe viewport without adding the same insets again.
+  viewportFit: "contain",
   themeColor: "#102a51",
 };
 
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
   applicationName: "Henry the Train",
   alternates: { canonical: siteUrl },
   manifest: assetUrl("/manifest.webmanifest"),
-  appleWebApp: { capable: true, title: "Henry the Train", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Henry the Train", statusBarStyle: "black" },
   icons: {
     icon: [
       { url: assetUrl("/favicon-32.png"), sizes: "32x32", type: "image/png" },

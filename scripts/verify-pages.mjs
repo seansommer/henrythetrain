@@ -18,7 +18,7 @@ for (const match of html.matchAll(/(?:src|href)="([^"#]+)"/g)) {
   await access(new URL(`../out${url.slice(base.length).split("?")[0]}`, import.meta.url));
 }
 await access(new URL("../out/.nojekyll", import.meta.url));
-assert.match(html, /viewport-fit=cover/);
+assert.match(html, /viewport-fit=contain/);
 for (const label of ["Background music volume", "Sound effects volume"]) {
   assert.ok(html.includes(`role="slider" aria-label="${label}"`), "Slider handle needs its own accessible label");
 }
